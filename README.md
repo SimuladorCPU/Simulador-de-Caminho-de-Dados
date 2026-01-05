@@ -23,10 +23,10 @@ A interação com o simulador é realizada por meio dos seguintes controles:
 
 |   |   |
 |---|---|
-| ![](assemble.png) | **ASSEMBLE (Montar)**: traduz o código Assembly para a representação interna de instruções |
-| ![](play_help.png) | **PLAY**: inicia a execução contínua do programa |
-| ![](pause.png) | **PAUSE**: pausa a execução no ciclo atual |
-| ![](forward.png) | **FORWARD (Passo-a-Passo)**: executa o programa de forma controlada |
+| ![](img/assemble.png) | **ASSEMBLE (Montar)**: traduz o código Assembly para a representação interna de instruções |
+| ![](img/play_help.png) | **PLAY**: inicia a execução contínua do programa |
+| ![](img/pause.png) | **PAUSE**: pausa a execução no ciclo atual |
+| ![](img/forward.png) | **FORWARD (Passo-a-Passo)**: executa o programa de forma controlada |
 
 ---
 
