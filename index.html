@@ -575,6 +575,10 @@
       let codigo_lista_dado = codigo_texto_dado.split("\n");
       let variaveis = []
 
+      if (codigo_lista_dado[0] == "") {
+        codigo_lista_dado.shift()
+      }
+
       for (let i = 0; i < codigo_lista_dado.length; i++) {
         codigo_lista_dado[i] = codigo_lista_dado[i].trim();
         let parse = codigo_lista_dado[i].split(" ");
