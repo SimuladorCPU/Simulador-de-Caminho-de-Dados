@@ -1,0 +1,4644 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simulador de Caminho de Dados</title>
+  <style>
+    .caixa_gpr {
+      width: 100px;
+      height: 225px;
+      overflow: auto;
+      padding: 6px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      gap: 6px;
+      background: #90ee90;
+    }
+
+    .caixa {
+      width: 100px;
+      height: 330px;
+      overflow: scroll;
+      padding: 6px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      gap: 6px;
+      background: #e6e6fa;
+    }
+
+    .editor {
+      display: flex;
+      font-family: monospace;
+      width: 200px;
+      height: 200px;
+    }
+
+    .linenos {
+      background: #54626F;
+      padding: 5px;
+      text-align: right;
+      user-select: none;
+      overflow: hidden;
+    }
+
+    .linenos div {
+      height: 1.2em;
+    }
+
+    textarea {
+      border: none;
+      outline: none;
+      resize: none;
+      overflow: auto;
+      padding: 5px;
+      font-family: monospace;
+      line-height: 1.2em;
+      flex: 1;
+    }
+
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: gray;
+      font-family: sans-serif;
+    }
+
+    .resultado {
+      width: 125px;
+      height: 100px;
+      background: #0fa341;
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .flag {
+      width: 25px;
+      height: 25px;
+      background: #d3d3d3;
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: black;
+    }
+
+    .minibox {
+      width: 100px;
+      height: 50px;
+      background: #ffa500;
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .data {
+      width: 65px;
+      height: 25px;
+      background: #f4d03f;
+      position: absolute;
+      pointer-events: none;
+      z-index: 10;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      text-align: center;
+      white-space: nowrap;
+
+      line-height: 25px;
+    }
+
+    svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .trapezoid {
+      width: 60px;
+      height: 30px;
+      background: lightgray;
+      border-color: #f4d03f;
+      position: absolute;
+      clip-path: polygon(20% 0, 80% 0, 100% 100%, 0% 100%);
+      transform: rotate(90deg);
+      transform-origin: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .retangulo {
+      width: 100px;
+      height: 150px;
+      background: #ADD8E6;
+      position: absolute;
+      display: flex;
+      justify-content: left;
+      color: white;
+    }
+  </style>
+</head>
+<body style="display: flex;">
+
+  <!-- Menu Esquerdo -->
+  <div id="Menu-Esquerdo" style="width: 200px; display: flex; flex-direction: column;">
+    <div id="Botoes-Controle" style="margin-left: 10px; margin-top: 5px; margin-bottom: 5px;">
+      <button id="button_play" style="position: absolute; top: 5px; left: 50px;">
+        <img id="img_play" src="img/play.png" width="30px" height="30px">
+      </button>
+      <button id="button_step" style="position: absolute; top: 5px; left: 95px;">
+        <img src="img/step.png" width="30px" height="30px">
+      </button>
+      <button id="button_play_step" style="position: absolute; top: 5px; left: 140px;">
+        <img src="img/play_step.png" width="30px" height="30px">
+      </button>
+      <button id="button_reset" style="position: absolute; top: 5px; left: 185px;">
+        <img src="img/restart.png" width="30px" height="30px">
+      </button>
+      <button id="compilar" style="position: absolute; top: 5px; left: 5px;">
+        <img src="img/compilar.png" width="30px" height="30px">
+      </button>
+    </div>
+    <select id="tipo_simulador" style="position: absolute; top: 5px; left: 230px;">
+      <option value="monociclo">Monociclo</option>
+      <option value="multiciclo">Multiciclo</option>
+    </select>
+    <select id="tipo_dado" style="position: absolute; left: 230px; top: 30px;">
+      <option value="bin">Hexadecimal</option>
+      <option value="dec">Decimal</option>
+    </select>
+    <select id="tipo_sinais" style="position: absolute; top: 30px; left: 340px;">
+      <option value="ativado">Com Sinais</option>
+      <option value="desativado">Sem Sinais</option>
+      <option value="teleporte">Tele Sinais</option>
+    </select>
+
+    <a href="https://github.com/GabrielBarbosaLK/simulador/blob/main/README.md" target="_blank" style="position: absolute; top: 5px; left: 340px;">
+      <button
+        style="border-radius: 50%; height: 19.5px; width: 19.5px;"
+      >
+        <img src="img/ajuda.png" height="20px" width="20px"
+            style="position: absolute; top: 0px; left: 0px;">
+      </button>
+    </a>
+
+    <div id="editores" style="display: flex; flex-direction: column; margin-top: 75px;">
+      <div id="editor_instrucao" style="background-color: #54626F; width: 220px;">
+        <label style="margin-left: 45px;">Editor de Instruções</label>
+        <div class="editor">
+          <div class="linenos" id="linenos_inst"></div>
+          <textarea style="resize: none;" id="editor_inst" rows="10" cols="40" oninput="updateEditor()" onscroll="syncScroll()"></textarea>
+        </div>
+      </div>
+      <div id="editor_dados" style="background-color: #54626F; width: 220px;">
+        <label style="margin-left: 45px;">Editor de Dados</label>
+        <div class="editor">
+          <div class="linenos" id="linenos_dads"></div>
+          <textarea style="resize: none;" id="editor_dads" rows="10" cols="40" oninput="updateEditor()" onscroll="syncScroll()"></textarea>
+        </div>
+      </div>
+      <div id="Console" style="background-color: #54626F; height: 200px; width: 500px; display: flex; flex-direction: column;">
+        <label style="margin-left: 220px; background-color: #54626F;">Console Log</label>
+        <div id="log" style="display: flex; background-color: black; height: 200px; width: 470px; margin: 10px; overflow: auto; flex-direction: column; padding: 5px;">
+          
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Menu Superior antigo -->
+  <div style="position: relative; left: 50px;">
+
+    <!-- Arquitetura -->
+    <div id="mux1" class="trapezoid" style="top: 259.5px; left: 25px; position: absolute;">
+      
+    </div>
+    <div id="p1_mux1" style="top: 250px; left: 0px; position: absolute;"></div>
+    <div id="p2_mux1" style="top: 175px; left: 0px; position: absolute;"></div>
+    <div id="p1_pipe" style="top: 175px; left: 510px; position: absolute;"></div>
+    <div id="p3_mux1" style="top: 275px; left: 0px; position: absolute;"></div>
+    <div id="p4_mux1" style="top: 400px; left: 0px; position: absolute;"></div>
+
+    <div id="p2_pipe" style="top: 425px; left: 510px; position: absolute;"></div>
+
+
+    <div id="pc" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 55px; width: 55px; background-color: #ffa500; top: 247.5px; left: 145px; position: absolute;">
+      <label style="display: flex;">PC</label>
+      <input id="pc_valor" style="width: 45px; display: flex;" disabled value="0000">
+    </div>
+
+    <div id="mar" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 55px; width: 55px; background-color: #ffa500; top: 147.5px; left: 470px; position: absolute;">
+      <label style="display: flex;">MAR</label>
+      <input id="mar_valor" style="width: 45px; display: flex;" disabled value="0000">
+    </div>
+
+    <div id="ir" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 55px; width: 60px; background-color: #ffa500; top: 205px; left: 635px; position: absolute;">
+      <label style="display: flex;">IR</label>
+      <input id="ir_valor" style="width: 50px; display: flex;" disabled value="0000">
+    </div>
+
+    <div id="mdr" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 55px; width: 55px; background-color: #ffa500; top: 407.5px; left: 635px; position: absolute;">
+      <label style="display: flex;">MDR</label>
+      <input id="mdr_valor" style="width: 45px; display: flex;" disabled value="0000">
+    </div>
+
+    <div id="a" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 55px; width: 55px; background-color: #ffa500; top: 230px; left: 980px; position: absolute;">
+      <label style="display: flex;">A</label>
+      <input id="a_valor" style="width: 45px; display: flex;" disabled value="0000">
+    </div>
+
+    <div id="b" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 55px; width: 55px; background-color: #ffa500; top: 380px; left: 980px; position: absolute;">
+      <label style="display: flex;">B</label>
+      <input id="b_valor" style="width: 45px; display: flex;" disabled value="0000">
+    </div>
+
+    <div id="r" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 55px; width: 55px; background-color: #ffa500; top: 475px; left: 1125px; position: absolute;">
+      <label style="display: flex;">R</label>
+      <input id="r_valor" style="width: 45px; display: flex;" disabled value="0000">
+    </div>
+
+    <div id="p1_pc" style="top: 270px; left: 270px; position: absolute;"></div>
+    <div id="p2_pc" style="top: 370px; left: 270px; position: absolute;"></div>
+
+    <div id="m_instr" style="position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #e6e6fa; height: 360px; width: 100px; top: 200px; left: 295px;">
+      <label style="display: block; font-size: small;">M. INSTRUÇÃO</label>
+      <div class="caixa" id="m_instrucao"></div>
+    </div>
+
+    <div id="m_dads" style="position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #e6e6fa; height: 360px; width: 100px; top: 250px; left: 500px;">
+      <label style="display: block; font-size: small;">M. DADOS</label>
+      <div class="caixa" id="m_dados"></div>
+    </div>
+
+    <div id="ula_pc" style="position: absolute; top: 350px; left: 50px;">
+      <img src="img/ula.png" width="75px" height="150px">
+      <div style="position: absolute; display: flex; align-items: center; justify-content: center; background-color: #d9f4fc; height: 25px; width: 25px; top: 60px; left: 17.5px;">
+        <img src="img/adicao.png" height="20px" width="20px">
+      </div>
+    </div>
+
+    <div id="mais_um" style="position: absolute; display: flex; align-items: center; justify-content: center; background-color: #ffa500; height: 37.5px; width: 37.5px; top: 450px; left: 200px;">
+      <label style="display: block;">1</label>
+    </div>
+
+    <div id="mux2" class="trapezoid" style="top: 299.5px; left: 750px; position: absolute;"></div>
+    <div id="mux3" class="trapezoid" style="top: 419.5px; left: 750px; position: absolute;"></div>
+
+    <div id="pipe" style="height: 285px; width: 10px; background-color: white; top: 145px; left: 725px; position: absolute;"></div>
+    <div id="up_pipe" style="top: 100px; left: 750px; position: absolute;"></div>
+
+    <div id="m_gpr" style="position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #90ee90; height: 250px; width: 100px; top: 200px; left: 865px;">
+      <label style="display: block; font-size: small;">GPR</label>
+      <div class="caixa_gpr" id="gpr"></div>
+    </div>
+    <div id="p1_gpr" style="top: 250px; left: 1060px; position: absolute;"></div>
+    <div id="p2_gpr" style="top: 600px; left: 1060px; position: absolute;"></div>
+    <div id="p3_gpr" style="top: 600px; left: 450px; position: absolute;"></div>
+    <div id="p4_gpr" style="top: 505px; left: 450px; position: absolute;"></div>
+
+
+    <div id="ula" style="position: absolute; top: 220px; left: 1100px;">
+      <img src="img/ula.png" width="112.5px" height="225px" style="transform: rotate(180deg);">
+      <div style="position: absolute; display: flex; align-items: center; justify-content: center; background-color: #d9f4fc; height: 35px; width: 35px; top: 95px; left: 40px;">
+        <img id="imagem" src="img/padrao.png" height="30px" width="30px">
+      </div>
+      <label style="position: absolute; top: 160px; left: 40px;">ULA</label>
+      <div style="position: absolute; top: 42.5px; left:65px;">
+        <div style="position: absolute; background-color: #d9f4fc; width: 20px; display: flex; align-items: center; justify-content: center;"><label>V</label></div>
+        <div id="carry" style="position: absolute; background-color: #d9f4fc; width: 20px; display: flex; align-items: center; justify-content: center; left: 20px;"><label>C</label></div>
+        <div id="negativo" style="position: absolute; background-color: #d9f4fc; width: 20px; display: flex; align-items: center; justify-content: center; top: 18px;"><label>N</label></div>
+        <div id="zero" style="position: absolute; background-color: #d9f4fc; width: 20px; display: flex; align-items: center; justify-content: center; top: 18px; left: 20px;"><label>Z</label></div>
+      </div>
+    </div>
+
+    <div id="p1_ula" style="top: 325px; left: 1240px; position: absolute;"></div>
+    <div id="p2_ula" style="top: 500px; left: 1240px; position: absolute;"></div>
+    <div id="p3_ula" style="top: 505px; left: 725px; position: absolute;"></div>
+    <div id="p4_ula" style="top: 460px; left: 725px; position: absolute;"></div>
+
+    <div id="controle" style="position: absolute; display: flex; align-items: center; justify-content: center; background-color: DeepSkyBlue; height: 75px; width: 100px; top: 25px; left: 800px;">CONTROLE</div>
+
+      <div id="p1" style="position: absolute; top: 700px; left: 1060px; width: 5px; height: 5px;"></div>
+      <div id="p2" style="position: absolute; top: 700px; left: 580px; width: 5px; height: 5px;"></div>
+
+    </div>
+    <div id="p1_controle" style="top: 150px; left: 950px; position: absolute;"></div>
+    <div id="p2_controle" style="top: 150px; left: 1050px; position: absolute;"></div>
+
+    <div id="p_mux_pc" style="top: 165px; left: 950px; position: absolute;"></div>
+
+    <div id="p_gpr_up" style="top: 175px; left: 950px; position: absolute;"></div>
+    <div id="p_gpr_down" style="top: 200px; left: 950px; position: absolute;"></div>
+    <div id="p_mux2_up" style="top: 265px; left: 950px; position: absolute;"></div>
+    <div id="p_mux2_down" style="top: 305px; left: 950px; position: absolute;"></div>
+    <div id="p_mux3_up" style="top: 385px; left: 950px; position: absolute;"></div>
+
+    <div id="p_controle_muxPC" style="top: 25px; left: 300px; position: absolute;"></div>
+    <div id="p_controle_rdMem" style="top: 35px; left: 800px; position: absolute;"></div>
+    <div id="p_controle_wrMem" style="top: 45px; left: 900px; position: absolute;"></div>
+    <div id="p_controle_muxAReg0" style="top: 45px; left: 1150px; position: absolute;"></div>
+    <div id="p_controle_muxAReg1" style="top: 150px; left: 1150px; position: absolute;"></div>
+    <div id="p_controle_muxAReg2" style="top: 150px; left: 1025px; position: absolute;"></div>
+    <div id="p_controle_wrReg" style="top: 35px; left: 1225px; position: absolute;"></div>
+    <div id="p_controle_muxDReg0" style="top: 25px; left: 1300px; position: absolute;"></div>
+    <div id="p_controle_muxDReg1" style="top: 550px; left: 1300px; position: absolute;"></div>
+    <div id="p_controle_muxDReg2" style="top: 550px; left: 1025px; position: absolute;"></div>
+    <div id="p_controle_opULA" style="top: 15px; left: 1390px; position: absolute;"></div>
+    <div id="p_controle_opULA_flag" style="top: 15px; left: 1430px; position: absolute;"></div>
+
+    <div id="p_controle_pc" style="top: 60px; left: 420px; position: absolute;"></div>
+    <div id="p_controle_ir" style="top: 85px; left: 910px; position: absolute;"></div>
+
+  </div>
+
+  <!-- Linhas -->
+  <svg id="svg" width="100%" height="100%">
+    <path id="line1" stroke="white" stroke-width="2" fill="none" />
+    <path id="line2" stroke="white" stroke-width="2" fill="none" />
+    <path id="line3" stroke="white" stroke-width="0" fill="none" />
+
+    <path id="line4" stroke="white" stroke-width="2" fill="none" />
+    <path id="line5" stroke="white" stroke-width="2" fill="none" />
+    <path id="line6" stroke="white" stroke-width="0" fill="none" />
+
+    <path id="line7" stroke="white" stroke-width="0" fill="none" />
+
+    <path id="line8" stroke="white" stroke-width="0" fill="none" />
+
+    <path id="line9" stroke="white" stroke-width="2" fill="none" />
+    <path id="line10" stroke="white" stroke-width="0" fill="none" />
+    <path id="line11" stroke="white" stroke-width="2" fill="none" />
+    <path id="line12" stroke="white" stroke-width="0" fill="none" />
+
+    <path id="line13" stroke="white" stroke-width="2" fill="none" />
+    <path id="line14" stroke="white" stroke-width="0" fill="none" />
+
+    <path id="line15" stroke="white" stroke-width="2" fill="none" />
+
+    <path id="line16" stroke="white" stroke-width="2" fill="none" />
+
+    <path id="line17" stroke="white" stroke-width="2" fill="none" />
+    <path id="line18" stroke="white" stroke-width="0" fill="none" />
+    <path id="line19" stroke="white" stroke-width="0" fill="none" />
+    <path id="line20" stroke="white" stroke-width="0" fill="none" />
+    <path id="line21" stroke="white" stroke-width="0" fill="none" />
+    <path id="line22" stroke="white" stroke-width="0" fill="none" />
+
+    <path id="line23" stroke="white" stroke-width="0" fill="none" />
+    <path id="line24" stroke="white" stroke-width="0" fill="none" />
+
+    <path id="line25" stroke="white" stroke-width="0" fill="none" />
+
+    <path id="line26" stroke="white" stroke-width="0" fill="none" />
+    <path id="line27" stroke="white" stroke-width="2" fill="none" />
+    <path id="line28" stroke="white" stroke-width="0" fill="none" />
+
+    <path id="line29" stroke="white" stroke-width="2" fill="none" />
+    <path id="line30" stroke="white" stroke-width="0" fill="none" />
+
+    <path id="line31" stroke="white" stroke-width="2" fill="none" />
+    <path id="line32" stroke="white" stroke-width="2" fill="none" />
+    <path id="line33" stroke="white" stroke-width="2" fill="none" />
+    <path id="line34" stroke="white" stroke-width="0" fill="none" />
+
+    <path id="line35" stroke="white" stroke-width="2" fill="none" />
+    <path id="line36" stroke="white" stroke-width="2" fill="none" />
+    <path id="line37" stroke="white" stroke-width="2" fill="none" />
+    <path id="line38" stroke="white" stroke-width="2" fill="none" />
+    <path id="line39" stroke="white" stroke-width="0" fill="none" />
+
+    <path id="line40" stroke="white" stroke-width="0" fill="none" />
+
+    <path id="line41" stroke="white" stroke-width="0" fill="none" />
+    <path id="line42" stroke="white" stroke-width="0" fill="none" />
+    <path id="line43" stroke="white" stroke-width="0" fill="none" />
+    <path id="line44" stroke="white" stroke-width="0" fill="none" />
+    <path id="line45" stroke="white" stroke-width="0" fill="none" />
+
+    <path id="line46" stroke="white" stroke-width="0" fill="none" />
+    <path id="line47" stroke="white" stroke-width="0" fill="none" />
+
+    <!-- Controle -->
+    <path id="line48" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+    <path id="line49" stroke="DeepSkyBlue" stroke-width="0" fill="none" />
+    <path id="line50" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+    <path id="line51" stroke="DeepSkyBlue" stroke-width="0" fill="none" />
+    <path id="line52" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+    <path id="line53" stroke="DeepSkyBlue" stroke-width="0" fill="none" />
+    <path id="line54" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+    <path id="line55" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+    <path id="line56" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+    <path id="line57" stroke="DeepSkyBlue" stroke-width="0" fill="none" />
+    <path id="line58" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+    <path id="line59" stroke="DeepSkyBlue" stroke-width="0" fill="none" />
+    <path id="line60" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+    <path id="line61" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+    <path id="line62" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+    <path id="line63" stroke="DeepSkyBlue" stroke-width="0" fill="none" />
+    <path id="line64" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+    <path id="line65" stroke="DeepSkyBlue" stroke-width="0" fill="none" />
+    <path id="line66" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+    <path id="line67" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+
+    <!-- controle multiciclo -->
+    <path id="line117" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+    <path id="line118" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+    <path id="line119" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+    <path id="line120" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+
+    <path id="line68" stroke="white" stroke-width="2" fill="none" />
+    <path id="line69" stroke="white" stroke-width="2" fill="none" />
+
+    <path id="line70" stroke="white" stroke-width="2" fill="none" />
+    <path id="line71" stroke="white" stroke-width="2" fill="none" />
+
+    <path id="line72" stroke="white" stroke-width="2" fill="none" />
+    <path id="line73" stroke="white" stroke-width="2" fill="none" />
+    <path id="line74" stroke="white" stroke-width="2" fill="none" />
+
+    <!-- Linhas complementares -->
+    <path id="line75" stroke="white" stroke-width="2" fill="none" />
+    <path id="line76" stroke="white" stroke-width="2" fill="none" />
+    <path id="line77" stroke="white" stroke-width="2" fill="none" />
+    <path id="line78" stroke="white" stroke-width="2" fill="none" />
+    <path id="line79" stroke="white" stroke-width="2" fill="none" />
+    <path id="line80" stroke="white" stroke-width="2" fill="none" />
+    <path id="line81" stroke="white" stroke-width="2" fill="none" />
+    <path id="line82" stroke="white" stroke-width="2" fill="none" />
+    <path id="line83" stroke="white" stroke-width="2" fill="none" />
+    <path id="line84" stroke="white" stroke-width="2" fill="none" />
+    <path id="line85" stroke="white" stroke-width="2" fill="none" />
+    <path id="line86" stroke="white" stroke-width="2" fill="none" />
+    <path id="line87" stroke="white" stroke-width="2" fill="none" />
+    <path id="line88" stroke="white" stroke-width="2" fill="none" />
+    <path id="line89" stroke="white" stroke-width="2" fill="none" />
+    <path id="line90" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+    <path id="line91" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+    <path id="line92" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+    <path id="line93" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+    <path id="line94" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+    <path id="line95" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+    <path id="line96" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+
+    <!-- tele sinal menor -->
+    <path id="line97" stroke="DeepSkyBlue" stroke-width="0" fill="none" />
+    <path id="line98" stroke="DeepSkyBlue" stroke-width="0" fill="none" />
+    <path id="line99" stroke="DeepSkyBlue" stroke-width="0" fill="none" />
+    <path id="line100" stroke="DeepSkyBlue" stroke-width="0" fill="none" />
+    <path id="line101" stroke="DeepSkyBlue" stroke-width="0" fill="none" />
+    <path id="line102" stroke="DeepSkyBlue" stroke-width="0" fill="none" />
+    <path id="line103" stroke="DeepSkyBlue" stroke-width="0" fill="none" />
+    <path id="line104" stroke="DeepSkyBlue" stroke-width="0" fill="none" />
+
+    <!-- multiciclo -->
+    <path id="line105" stroke="white" stroke-width="0" fill="none" />
+    <path id="line106" stroke="white" stroke-width="0" fill="none" />
+    <path id="line107" stroke="white" stroke-width="0" fill="none" />
+    <path id="line108" stroke="white" stroke-width="0" fill="none" />
+    <path id="line109" stroke="white" stroke-width="0" fill="none" />
+    <path id="line110" stroke="white" stroke-width="0" fill="none" />
+
+    <path id="line111" stroke="white" stroke-width="0" fill="none" />
+    <path id="line112" stroke="white" stroke-width="0" fill="none" />
+    <path id="line113" stroke="white" stroke-width="0" fill="none" />
+    <path id="line114" stroke="white" stroke-width="0" fill="none" />
+    <path id="line115" stroke="white" stroke-width="0" fill="none" />
+    <path id="line116" stroke="white" stroke-width="0" fill="none" />
+
+    <path id="line121" stroke="white" stroke-width="2" fill="none" />
+    <path id="line122" stroke="white" stroke-width="2" fill="none" />
+    <path id="line123" stroke="white" stroke-width="2" fill="none" />
+    <path id="line124" stroke="white" stroke-width="2" fill="none" />
+  </svg>
+
+  <!-- Bolinha -->
+  <div id="data1" class="data" style="display: none;"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
+
+  <script>
+    let mem_instrucao = [];
+    let mem_dados = [];
+    let mem_gpr = [];
+
+    let log = [];
+
+    for (let i = 0; i < 256; i++) {
+      mem_instrucao[i] = 0;
+      mem_dados[i] = 0;
+      if (i < 8) {
+        mem_gpr[i] = 0;
+      }
+    }
+
+    let lista_ops = ["LDA", "LDAI", "STA", "ADD", "SUB", "AND", "OR", "NOT", "JZ", "JN", "JMP", "HLT"];
+    let lista_ops_binario = ["00001", "00010", "00011", "00100", "00101", "00110", "00111", "01000", "01001", "01011", "01100", "01101"];
+
+    function compilacao() {
+      document.getElementById("pc_valor").value = "0000";
+
+      let codigo_texto_label = document.getElementById("editor_inst").value;
+      let codigo_lista_label = codigo_texto_label.split("\n");
+      let lista_label = []
+      let label = []
+
+      for (let i = 0; i < codigo_lista_label.length; i++) {
+        codigo_lista_label[i] = codigo_lista_label[i].replaceAll("\t", "");
+      }
+
+      for (let i = 0; i < codigo_lista_label.length; i++) {
+        lista_label[lista_label.length] = codigo_lista_label[i].split(":");
+        if (lista_label[i].length > 1) {
+          label[label.length] = [lista_label[i][0], i];
+        }
+      }
+
+      let codigo_texto_dado = document.getElementById("editor_dads").value;
+      let codigo_lista_dado = codigo_texto_dado.split("\n");
+      let variaveis = []
+
+      for (let i = 0; i < codigo_lista_dado.length; i++) {
+        codigo_lista_dado[i] = codigo_lista_dado[i].trim();
+        let parse = codigo_lista_dado[i].split(" ");
+        variaveis[variaveis.length] = [parse[0], parse[1], i];
+      }
+
+      let bin_dados = [];
+      for (let i = 0; i < variaveis.length; i++) {
+        bin_dados[bin_dados.length] = parseInt(variaveis[i][1]).toString(2);
+      }
+
+      for (let i = 0; i < bin_dados.length; i++) {
+        while (bin_dados[i].length < 16) {
+          bin_dados[i] = "0" + bin_dados[i];
+        }
+      }
+
+      for (let i = 0; i < 255; i++) {
+        if (i < bin_dados.length) {
+          let m_input = document.getElementById("m_dad" + i);
+          m_input.value = bin_dados[i];
+        } else if (i > variaveis.length / 2) {
+          let m_input = document.getElementById("m_dad" + i);
+          m_input.value = "0000000000000000";
+        }
+      }
+
+      let codigo_texto = document.getElementById("editor_inst").value;
+      let codigo_lista = codigo_texto.split("\n");
+      let codigo_binario = [];
+
+      variaveis.sort((a, b) => b[0].length - a[0].length);
+
+      for (let i = 0; i < codigo_lista.length; i++) {
+        codigo_lista[i] = codigo_lista[i].trim();
+        for (let ii = 0; ii < label.length; ii++) {
+          codigo_lista[i] = codigo_lista[i].replaceAll(label[ii][0] + ":", "");
+          codigo_lista[i] = codigo_lista[i].replaceAll(label[ii][0], label[ii][1]);
+        }
+        codigo_lista[i] = codigo_lista[i].trim();
+
+        for (let ii = 0; ii < variaveis.length; ii++) {
+          codigo_lista[i] = codigo_lista[i].replaceAll(variaveis[ii][0], variaveis[ii][2]);
+        }
+      }
+
+      const div_log = document.getElementById('log');
+      let novo_label;
+
+      for (let i = 0; i < codigo_lista.length; i++) {
+        let codigo_bruto = codigo_lista[i].split(" ");
+        let op = codigo_bruto[0].toUpperCase();
+        let op_binario = 0;
+        for (let ii = 0; ii < lista_ops.length; ii++) {
+          if (op == lista_ops[ii]) {
+            op_binario = lista_ops_binario[ii];
+            codigo_binario[codigo_binario.length] = op_binario;
+            let separacao = codigo_lista[i].indexOf(" ");
+            
+            if (op == "LDA") {
+              let corpo = codigo_lista[i].slice(separacao);
+              corpo = corpo.replaceAll(' ', '');
+              corpo = corpo.split(",");
+              if (corpo.length > 2 || codigo_lista[i].indexOf(",") < 0) {
+                console.log("Erro na linha", i, ": Esperado 2 argumentos para operação LDA (numero de argumentos invalidos)");
+
+                novo_label = document.createElement('label');
+                novo_label.textContent = "Erro na linha " + i + ": Esperado 2 argumentos para operação LDA.";
+                novo_label.style.color = "green";
+                div_log.appendChild(novo_label);
+
+              } else {
+                corpo[1] = corpo[1].replaceAll("r", "");
+                corpo[1] = corpo[1].replaceAll("R", "");
+                if (!isNaN(corpo[1])) {
+                  let rd = Number(corpo[1]);
+                  rd = rd.toString(2);
+                  for (let iii = rd.length; iii < 3; iii++) {
+                    rd = "0" + rd;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += rd;
+                } else {
+                  console.log("Erro na linha", i, ": Valor do registrador não é um numero");
+
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha " + i + ": Valor do registrador não encontrado.";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+
+                if (!isNaN(corpo[0])) {
+                  let ms = Number(corpo[0]);
+                  ms = ms.toString(2);
+                  for (let iii = ms.length; iii < 8; iii++) {
+                    ms = "0" + ms;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += ms;
+                } else {
+                  console.log("Erro na linha", i, ": Valor de memoria não é um numero");
+
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha" + i + ": Valor de memoria não encontrado.";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+              }
+            } else if (op == "LDAI") {
+              let corpo = codigo_lista[i].slice(separacao);
+              corpo = corpo.replaceAll(' ', '');
+              corpo = corpo.split(",");
+              if (corpo.length > 2 || codigo_lista[i].indexOf(",") < 0) {
+                console.log("Erro na linha", i, ": Esperado 2 argumentos para operação LDAI (numero de argumentos invalidos)")
+
+                novo_label = document.createElement('label');
+                novo_label.textContent = "Erro na linha " + i + ": Esperado 2 argumentos para operação LDAI.";
+                novo_label.style.color = "green";
+                div_log.appendChild(novo_label);
+              } else {
+                corpo[1] = corpo[1].replaceAll("r", "");
+                corpo[1] = corpo[1].replaceAll("R", "");
+                if (!isNaN(corpo[1])) {
+                  let rd = Number(corpo[1]);
+                  rd = rd.toString(2);
+                  for (let iii = rd.length; iii < 3; iii++) {
+                    rd = "0" + rd;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += rd;
+                } else {
+                  console.log("Erro na linha", i, ": Valor do registrador não é um numero");
+
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha" + i + ": Valor do registrador não encontrado.";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+                if (!isNaN(corpo[0])) {
+                  let ms = Number(corpo[0]);
+                  ms = ms.toString(2);
+                  for (let iii = ms.length; iii < 8; iii++) {
+                    ms = "0" + ms;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += ms;
+                } else {
+                  console.log("Erro na linha", i, ": Valor de memoria não é um numero");
+
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha" + i + ": Valor de memoria não encontrado";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+              }
+            } else if (op == "STA") {
+              let corpo = codigo_lista[i].slice(separacao);
+              corpo = corpo.replaceAll(' ', '');
+              corpo = corpo.split(",");
+              if (corpo.length > 2 || codigo_lista[i].indexOf(",") < 0) {
+                console.log("Erro na linha", i, ": Esperado 2 argumentos para operação STA (numero de argumentos invalidos)")
+
+                novo_label = document.createElement('label');
+                novo_label.textContent = "Erro na linha " + i + ": Esperado 2 argumentos para operação STA";
+                novo_label.style.color = "green";
+                div_log.appendChild(novo_label);
+              } else {
+                corpo[0] = corpo[0].replaceAll("r", "");
+                corpo[0] = corpo[0].replaceAll("R", "");
+                if (!isNaN(corpo[0])) {
+                  let rs = Number(corpo[0]);
+                  rs = rs.toString(2);
+                  for (let iii = rs.length; iii < 3; iii++) {
+                    rs = "0" + rs;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += rs;
+                } else {
+                  console.log("Erro na linha", i, ": Valor do registrador não é um numero");
+
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha" + i + ": Valor do registrador não encontrado.";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+                if (!isNaN(corpo[1])) {
+                  let md = Number(corpo[1]);
+                  md = md.toString(2);
+                  for (let iii = md.length; iii < 8; iii++) {
+                    md = "0" + md;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += md;
+                } else {
+                  console.log("Erro na linha", i, ": Valor da memoria não é um numero");
+
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha " + i + ": Valor da memoria não encontrado.";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+              }
+            } else if (op == "ADD") {
+              let corpo = codigo_lista[i].slice(separacao);
+              corpo = corpo.replaceAll(' ', '');
+              corpo = corpo.split(",");
+              if (corpo.length > 3 || codigo_lista[i].indexOf(",") < 0) {
+                console.log("Erro na linha", i, ": Esperado 3 argumentos para operação ADD (numero de argumentos invalidos)")
+
+                novo_label = document.createElement('label');
+                novo_label.textContent = "Erro na linha " + i + ": Esperado 3 argumentos para operação ADD.";
+                novo_label.style.color = "green";
+                div_log.appendChild(novo_label);
+              } else {
+                corpo[0] = corpo[0].replaceAll("r", "");
+                corpo[0] = corpo[0].replaceAll("R", "");
+                corpo[1] = corpo[1].replaceAll("r", "");
+                corpo[1] = corpo[1].replaceAll("R", "");
+                corpo[2] = corpo[2].replaceAll("r", "");
+                corpo[2] = corpo[2].replaceAll("R", "");
+                if (!isNaN(corpo[0])) {
+                  let rs1 = Number(corpo[0]);
+                  rs1 = rs1.toString(2);
+                  for (let iii = rs1.length; iii < 3; iii++) {
+                    rs1 = "0" + rs1;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += rs1;
+                } else {
+                  console.log("Erro na linha", i, ": Valor do registrador não é um numero");
+
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha" + i + ": Valor do registrador não encontrado.";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+                if (!isNaN(corpo[1])) {
+                  let rs2 = Number(corpo[1]);
+                  rs2 = rs2.toString(2);
+                  for (let iii = rs2.length; iii < 3; iii++) {
+                    rs2 = "0" + rs2;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += rs2;
+                } else {
+                  console.log("Erro na linha", i, ": Valor do registrador não é um numero");
+
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha " + i + ": Valor do registrador não encontrado.";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+                if (!isNaN(corpo[2])) {
+                  let rd = Number(corpo[2]);
+                  rd = rd.toString(2);
+                  for (let iii = rd.length; iii < 5; iii++) {
+                    rd = "0" + rd;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += rd;
+                } else {
+                  console.log("Erro na linha", i, ": Valor do registrador não é um numero");
+
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha " + i + ": Valor do registrador não encontrado.";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+              }
+            } else if (op == "SUB") {
+              let corpo = codigo_lista[i].slice(separacao);
+              corpo = corpo.replaceAll(' ', '');
+              corpo = corpo.split(",");
+              if (corpo.length > 3 || codigo_lista[i].indexOf(",") < 0) {
+                console.log("Erro na linha", i, ": Esperado 3 argumentos para operação SUB (numero de argumentos invalidos)")
+
+                novo_label = document.createElement('label');
+                novo_label.textContent = "Erro na linha " + i + ": Esperado 3 argumentos para operação SUB.";
+                novo_label.style.color = "green";
+                div_log.appendChild(novo_label);
+              } else {
+                corpo[0] = corpo[0].replaceAll("r", "");
+                corpo[0] = corpo[0].replaceAll("R", "");
+                corpo[1] = corpo[1].replaceAll("r", "");
+                corpo[1] = corpo[1].replaceAll("R", "");
+                corpo[2] = corpo[2].replaceAll("r", "");
+                corpo[2] = corpo[2].replaceAll("R", "");
+                if (!isNaN(corpo[0])) {
+                  let rs1 = Number(corpo[0]);
+                  rs1 = rs1.toString(2);
+                  for (let iii = rs1.length; iii < 3; iii++) {
+                    rs1 = "0" + rs1;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += rs1;
+                } else {
+                  console.log("Erro na linha", i, ": Valor do registrador não é um numero");
+
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha" + i + ": Valor do registrador não encontrado.";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+                if (!isNaN(corpo[1])) {
+                  let rs2 = Number(corpo[1]);
+                  rs2 = rs2.toString(2);
+                  for (let iii = rs2.length; iii < 3; iii++) {
+                    rs2 = "0" + rs2;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += rs2;
+                } else {
+                  console.log("Erro na linha", i, ": Valor do registrador não é um numero");
+
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha " + i + ": Valor do registrador não encontrado.";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+                if (!isNaN(corpo[2])) {
+                  let rd = Number(corpo[2]);
+                  rd = rd.toString(2);
+                  for (let iii = rd.length; iii < 5; iii++) {
+                    rd = "0" + rd;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += rd;
+                } else {
+                  console.log("Erro na linha", i, ": Valor do registrador não é um numero");
+
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha " + i + ": Valor do registrador não encontrado.";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+              }
+            } else if (op == "AND") {
+              let corpo = codigo_lista[i].slice(separacao);
+              corpo = corpo.replaceAll(' ', '');
+              corpo = corpo.split(",");
+              if (corpo.length > 3 || codigo_lista[i].indexOf(",") < 0) {
+                console.log("Erro na linha", i, ": Esperado 3 argumentos para operação AND (numero de argumentos invalidos)")
+
+                novo_label = document.createElement('label');
+                novo_label.textContent = "Erro na linha " + i + ": Esperado 3 argumentos para operação AND.";
+                novo_label.style.color = "green";
+                div_log.appendChild(novo_label);
+              } else {
+                corpo[0] = corpo[0].replaceAll("r", "");
+                corpo[0] = corpo[0].replaceAll("R", "");
+                corpo[1] = corpo[1].replaceAll("r", "");
+                corpo[1] = corpo[1].replaceAll("R", "");
+                corpo[2] = corpo[2].replaceAll("r", "");
+                corpo[2] = corpo[2].replaceAll("R", "");
+                if (!isNaN(corpo[0])) {
+                  let rs1 = Number(corpo[0]);
+                  rs1 = rs1.toString(2);
+                  for (let iii = rs1.length; iii < 3; iii++) {
+                    rs1 = "0" + rs1;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += rs1;
+                } else {
+                  console.log("Erro na linha", i, ": Valor do registrador não é um numero");
+
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha " + i + ": Valor do registrador não encontrado.";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+                if (!isNaN(corpo[1])) {
+                  let rs2 = Number(corpo[1]);
+                  rs2 = rs2.toString(2);
+                  for (let iii = rs2.length; iii < 3; iii++) {
+                    rs2 = "0" + rs2;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += rs2;
+                } else {
+                  console.log("Erro na linha", i, ": Valor do registrador não é um numero");
+
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha " + i + ": Valor do registrador não encontrado.";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+                if (!isNaN(corpo[2])) {
+                  let rd = Number(corpo[2]);
+                  rd = rd.toString(2);
+                  for (let iii = rd.length; iii < 5; iii++) {
+                    rd = "0" + rd;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += rd;
+                } else {
+                  console.log("Erro na linha", i, ": Valor do registrador não é um numero");
+
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha " + i + ": Valor do registrador não encontrado.";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+              }
+            } else if (op == "OR") {
+              let corpo = codigo_lista[i].slice(separacao);
+              corpo = corpo.replaceAll(' ', '');
+              corpo = corpo.split(",");
+              if (corpo.length > 3 || codigo_lista[i].indexOf(",") < 0) {
+                console.log("Erro na linha", i, ": Esperado 3 argumentos para operação OR (numero de argumentos invalidos)")
+
+                novo_label = document.createElement('label');
+                novo_label.textContent = "Erro na linha " + i + ": Esperado 3 argumentos para operação OR.";
+                novo_label.style.color = "green";
+                div_log.appendChild(novo_label);
+              } else {
+                corpo[0] = corpo[0].replaceAll("r", "");
+                corpo[0] = corpo[0].replaceAll("R", "");
+                corpo[1] = corpo[1].replaceAll("r", "");
+                corpo[1] = corpo[1].replaceAll("R", "");
+                corpo[2] = corpo[2].replaceAll("r", "");
+                corpo[2] = corpo[2].replaceAll("R", "");
+                if (!isNaN(corpo[0])) {
+                  let rs1 = Number(corpo[0]);
+                  rs1 = rs1.toString(2);
+                  for (let iii = rs1.length; iii < 3; iii++) {
+                    rs1 = "0" + rs1;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += rs1;
+                } else {
+                  console.log("Erro na linha", i, ": Valor do registrador não é um numero");
+
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha " + i + ": Valor do registrador não encontrado.";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+                if (!isNaN(corpo[1])) {
+                  let rs2 = Number(corpo[1]);
+                  rs2 = rs2.toString(2);
+                  for (let iii = rs2.length; iii < 3; iii++) {
+                    rs2 = "0" + rs2;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += rs2;
+                } else {
+                  console.log("Erro na linha", i, ": Valor do registrador não é um numero");
+
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha " + i + ": Valor do registrador não encontrado.";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+                if (!isNaN(corpo[2])) {
+                  let rd = Number(corpo[2]);
+                  rd = rd.toString(2);
+                  for (let iii = rd.length; iii < 5; iii++) {
+                    rd = "0" + rd;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += rd;
+                } else {
+                  console.log("Erro na linha", i, ": Valor do registrador não é um numero");
+
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha " + i + ": Valor do registrador não encontrado.";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+              }
+            } else if (op == "NOT") {
+              let corpo = codigo_lista[i].slice(separacao);
+              corpo = corpo.replaceAll(' ', '');
+              corpo = corpo.split(",");
+              if (corpo.length > 2 || codigo_lista[i].indexOf(",") < 0) {
+                console.log("Erro na linha", i, ": Esperado 2 argumentos para operação NOT (numero de argumentos invalidos)")
+
+                novo_label = document.createElement('label');
+                novo_label.textContent = "Erro na linha " + i + ": Esperado 2 argumentos para operação NOT.";
+                novo_label.style.color = "green";
+                div_log.appendChild(novo_label);
+              } else {
+                corpo[0] = corpo[0].replaceAll("r", "");
+                corpo[0] = corpo[0].replaceAll("R", "");
+                corpo[1] = corpo[1].replaceAll("r", "");
+                corpo[1] = corpo[1].replaceAll("R", "");
+                if (!isNaN(corpo[0])) {
+                  let rs1 = Number(corpo[0]);
+                  rs1 = rs1.toString(2);
+                  for (let iii = rs1.length; iii < 3; iii++) {
+                    rs1 = "0" + rs1;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += rs1;
+                } else {
+                  console.log("Erro na linha", i, ": Valor do registrador não é um numero");
+
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha " + i + ": Valor do registrador não encontrado.";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+                if (!isNaN(corpo[1])) {
+                  let rd = Number(corpo[1]);
+                  rd = rd.toString(2);
+                  for (let iii = rd.length; iii < 8; iii++) {
+                    rd = "0" + rd;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += rd;
+                } else {
+                  console.log("Erro na linha", i, ": Valor do registrador não é um numero");
+                  
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha " + i + ": Valor do registrador não encontrado.";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+              }
+            } else if (op == "JZ") {
+              let corpo = codigo_lista[i].slice(separacao);
+              corpo = corpo.trim();
+              corpo = corpo.split(" ");
+              if (corpo.length > 1 || codigo_lista[i].indexOf(" ") < 0) {
+                console.log("Erro na linha", i, ": Esperado 1 argumentos para operação JZ (numero de argumentos invalidos)")
+
+                novo_label = document.createElement('label');
+                novo_label.textContent = "Erro na linha " + i + ": Esperado 1 argumentos para operação JZ.";
+                novo_label.style.color = "green";
+                div_log.appendChild(novo_label);
+              } else {
+                if (!isNaN(corpo[0])) {
+                  let m = Number(corpo[0]);
+                  m = m.toString(2);
+                  for (let iii = m.length; iii < 11; iii++) {
+                    m = "0" + m;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += m;
+                } else {
+                  console.log("Erro na linha", i, ": Valor de memoria não é um numero");
+
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha " + i + ": Valor de memoria não encontrado";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+              }
+            } else if (op == "JN") {
+              let corpo = codigo_lista[i].slice(separacao);
+              corpo = corpo.trim();
+              corpo = corpo.split(" ");
+              if (corpo.length > 1 || codigo_lista[i].indexOf(" ") < 0) {
+                console.log("Erro na linha", i, ": Esperado 1 argumentos para operação JN (numero de argumentos invalidos)")
+
+                novo_label = document.createElement('label');
+                novo_label.textContent = "Erro na linha " + i + ": Esperado 1 argumentos para operação JN.";
+                novo_label.style.color = "green";
+                div_log.appendChild(novo_label);
+              } else {
+                if (!isNaN(corpo[0])) {
+                  let m = Number(corpo[0]);
+                  m = m.toString(2);
+                  for (let iii = m.length; iii < 11; iii++) {
+                    m = "0" + m;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += m;
+                } else {
+                  console.log("Erro na linha", i, ": Valor de memoria não é um numero");
+
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha " + i + ": Valor de memoria não encontrado.";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+              }
+            } else if (op == "JMP") {
+              let corpo = codigo_lista[i].slice(separacao);
+              corpo = corpo.trim();
+              corpo = corpo.split(" ");
+              if (corpo.length > 1 || codigo_lista[i].indexOf(" ") < 0) {
+                console.log("Erro na linha", i, ": Esperado 1 argumentos para operação JMP (numero de argumentos invalidos)")
+
+                novo_label = document.createElement('label');
+                novo_label.textContent = "Erro na linha " + i + ": Esperado 1 argumentos para operação JMP.";
+                novo_label.style.color = "green";
+                div_log.appendChild(novo_label);
+              } else {
+                if (!isNaN(corpo[0])) {
+                  let m = Number(corpo[0]);
+                  m = m.toString(2);
+                  for (let iii = m.length; iii < 11; iii++) {
+                    m = "0" + m;
+                  }
+                  codigo_binario[codigo_binario.length - 1] += m;
+                } else {
+                  console.log("Erro na linha", i, ": Valor de memoria não é um numero");
+
+                  novo_label = document.createElement('label');
+                  novo_label.textContent = "Erro na linha " + i + ": Valor de memoria não encontrado";
+                  novo_label.style.color = "green";
+                  div_log.appendChild(novo_label);
+                }
+              }
+            } else if (op == "HLT") {
+              let corpo = codigo_lista[i].slice(3);
+              corpo = corpo.trim();
+              corpo = corpo.split("");
+              if (corpo.length > 0) {
+                console.log("Erro na linha", i, ": Esperado 0 argumentos para operação HLT (numero de argumentos invalidos)");
+
+                novo_label = document.createElement('label');
+                novo_label.textContent = "Erro na linha " + i + ": Esperado 0 argumentos para operação HLT.";
+                novo_label.style.color = "green";
+                div_log.appendChild(novo_label);
+              } else {
+                let ocioso = "";
+                for (let iii = ocioso.length; iii < 11; iii++) {
+                  ocioso = "0" + ocioso;
+                }
+                codigo_binario[codigo_binario.length - 1] += ocioso;
+              }
+            }
+            break;
+          }
+        }
+        if (op_binario == 0) {
+          console.log("Erro na linha: ", i, ", Operação (", op, ") não existe.");
+
+          novo_label = document.createElement('label');
+          novo_label.textContent = "Erro na linha: " + i + ", Operação (" + op + ") não existe.";
+          novo_label.style.color = "green";
+          div_log.appendChild(novo_label);
+        }
+      }
+      for (let i = 0; i <= 255; i++) {
+        if (i < codigo_binario.length) {
+          let m_input = document.getElementById("m_ins" + i);
+          m_input.value = codigo_binario[i];
+        } else {
+          let m_input = document.getElementById("m_ins" + i);
+          m_input.value = "0000";
+        }
+      }
+
+      // [PC, instrucao, [memoria de dados], [registradores], [flags], [controle]]
+      // flags = [zero, carry, negativo], controle = [muxPC, rdMem, wrMem, muxAReg, wrReg, muxDReg, opULA]
+      let pc = 0;
+      let limite = 0;
+
+      for (let i = 0; i < 255; i++) {
+        let memoria = document.getElementById("m_dad" + i).value;
+        mem_dados[i] = memoria;
+      }
+
+      for (let i = 0; i <= 255; i++) {
+        let aux = parseInt(complemento(document.getElementById("m_dad" + i).value), 2).toString(16);
+
+        while (aux.length < 4) {
+          aux = "0" + aux;
+        }
+
+        document.getElementById("m_dad" + i).value = aux;
+      }
+
+      let controle = [0, 0, 0, 0, 0, 0, 0];
+
+      for (let i = 0; pc < codigo_binario.length; i++) {
+        let instrucao = document.getElementById("m_ins" + pc).value;
+        let opcode = instrucao.substring(0, 5);
+        let flags = [false, false, false];
+        log[i] = [pc, instrucao, mem_dados.slice(), mem_gpr.slice(), flags, controle.slice()];
+
+        // LDA
+        if (opcode == "00001") {
+          let rd = instrucao.substring(5, 8);
+          let ms = instrucao.substring(8, 16);
+          mem_gpr[parseInt(rd, 2)] = mem_dados[parseInt(ms, 2)];
+
+          controle[0] = 1;
+          controle[1] = 1;
+          controle[2] = 0;
+          controle[3] = 0;
+          controle[4] = 1;
+          controle[5] = "01";
+          controle[6] = "000";
+
+        // LDAI
+        } else if (opcode == "00010") {
+          let rd = instrucao.substring(5, 8);
+          let imediato = instrucao.substring(8, 16);
+
+          while (imediato.length < 16) {
+            imediato = "0" + imediato;
+          }
+
+          mem_gpr[parseInt(rd, 2)] = imediato;
+
+          controle[0] = 1;
+          controle[1] = 0;
+          controle[2] = 0;
+          controle[3] = 0;
+          controle[4] = 1;
+          controle[5] = "00";
+          controle[6] = "000";
+
+        // STA
+        } else if (opcode == "00011") {
+          let rd = instrucao.substring(5, 8);
+          let ms = instrucao.substring(8, 16);
+          mem_dados[parseInt(ms, 2)] = mem_gpr[parseInt(rd, 2)];
+
+          controle[0] = 1;
+          controle[1] = 0;
+          controle[2] = 1;
+          controle[3] = 1;
+          controle[4] = 0;
+          controle[5] = "10";
+          controle[6] = "000";
+        
+        // ADD
+        } else if (opcode == "00100") {
+          let rs1 = instrucao.substring(5, 8);
+          let rs2 = instrucao.substring(8, 11);
+          let rd = instrucao.substring(13, 16);
+          let operando1 = mem_gpr[parseInt(rs1, 2)].toString();
+          let operando2 = mem_gpr[parseInt(rs2, 2)].toString();
+          let op1_index = operando1.indexOf("-");
+          let op2_index = operando2.indexOf("-");
+          let soma;
+
+          if (op1_index == -1 && op2_index == -1) {
+            soma = parseInt(mem_gpr[parseInt(rs1, 2)], 2) + parseInt(mem_gpr[parseInt(rs2, 2)], 2);
+          } else {
+            if (op1_index > 0) {
+              operando1 = "-" + operando1.substring(op1_index + 1, operando1.length)
+            }
+
+            if (op2_index > 0) {
+              operando2 = "-" + operando2.substring(op2_index + 1, operando2.length)
+            }
+            
+            soma = parseInt(operando1, 2) + parseInt(operando2, 2)
+          }
+
+          mem_gpr[parseInt(rd, 2)] = soma.toString(2);
+
+          if (soma == 0) {
+            flags[0] = true;
+          }
+          if (soma > 32767 || soma < -32767) {
+           flags[1] = true;
+          }
+          if (soma < 0) {
+            flags[2] = true;
+          }
+
+          log[i][4] = flags;
+
+          controle[0] = 1;
+          controle[1] = 0;
+          controle[2] = 0;
+          controle[3] = 1;
+          controle[4] = 1;
+          controle[5] = "10";
+          controle[6] = "000";
+        
+        // SUB
+        } else if (opcode == "00101") {
+          let rs1 = instrucao.substring(5, 8);
+          let rs2 = instrucao.substring(8, 11);
+          let rd = instrucao.substring(13, 16);
+          let subtracao;
+          
+          let operando1 = mem_gpr[parseInt(rs1, 2)].toString();
+          let operando2 = mem_gpr[parseInt(rs2, 2)].toString();
+          let op1_index = operando1.indexOf("-");
+          let op2_index = operando2.indexOf("-");
+
+          if (op1_index == -1 && op2_index == -1) {
+            subtracao = parseInt(mem_gpr[parseInt(rs1, 2)], 2) - parseInt(mem_gpr[parseInt(rs2, 2)], 2);
+          } else {
+            if (op1_index > 0) {
+              operando1 = "-" + operando1.substring(op1_index + 1, operando1.length)
+            }
+
+            if (op2_index > 0) {
+              operando2 = "-" + operando2.substring(op2_index + 1, operando2.length)
+            }
+            
+            if (parseInt(operando2, 2) > 0) {
+              subtracao = parseInt(operando1, 2) - parseInt(operando2, 2)
+            } else {
+              subtracao = parseInt(operando1, 2) - parseInt(operando2, 2)
+            }
+            
+          }
+
+          mem_gpr[parseInt(rd, 2)] = subtracao.toString(2);
+
+          if (subtracao == 0) {
+            flags[0] = true;
+          }
+          if (subtracao > 32767 || subtracao < -32767) {
+           flags[1] = true;
+          }
+          if (subtracao < 0) {
+            flags[2] = true;
+          }
+          
+          log[i][4] = flags;
+
+          controle[0] = 1;
+          controle[1] = 0;
+          controle[2] = 0;
+          controle[3] = 1;
+          controle[4] = 1;
+          controle[5] = "10";
+          controle[6] = "001";
+        
+        // AND
+        } else if (opcode == "00110") {
+          let rs1 = instrucao.substring(5, 8);
+          let rs2 = instrucao.substring(8, 11);
+          let rd = instrucao.substring(13, 16);
+          let and = parseInt(mem_gpr[parseInt(rs1, 2)], 2) & parseInt(mem_gpr[parseInt(rs2, 2)], 2);
+          mem_gpr[parseInt(rd, 2)] = and.toString(2);
+
+          controle[0] = 1;
+          controle[1] = 0;
+          controle[2] = 0;
+          controle[3] = 1;
+          controle[4] = 1;
+          controle[5] = "10";
+          controle[6] = "100";
+        
+        // OR
+        } else if (opcode == "00111") {
+          let rs1 = instrucao.substring(5, 8);
+          let rs2 = instrucao.substring(8, 11);
+          let rd = instrucao.substring(13, 16);
+          let or = parseInt(mem_gpr[parseInt(rs1, 2)], 2) | parseInt(mem_gpr[parseInt(rs2, 2)], 2);
+          mem_gpr[parseInt(rd, 2)] = or.toString(2);
+
+          controle[0] = 1;
+          controle[1] = 0;
+          controle[2] = 0;
+          controle[3] = 1;
+          controle[4] = 1;
+          controle[5] = "10";
+          controle[6] = "110";
+        
+        // NOT
+        } else if (opcode == "01000") {
+          let rs1 = instrucao.substring(5, 8);
+          let rd  = instrucao.substring(13, 16);
+
+          let valorRs1 = parseInt(mem_gpr[parseInt(rs1, 2)], 2);
+
+          let resultado = (~valorRs1) & 0xFFFF;
+
+          let valorBin = resultado.toString(2).padStart(16, '0');
+
+          mem_gpr[parseInt(rd, 2)] = valorBin;
+
+          controle[0] = 1;
+          controle[1] = 0;
+          controle[2] = 0;
+          controle[3] = 1;
+          controle[4] = 1;
+          controle[5] = "10";
+          controle[6] = "111";
+        
+        // JZ
+        } else if (opcode == "01001") {
+          if (log[i - 1][4][0] == true) {
+            let md = instrucao.substring(8, 16);
+            pc = parseInt(md, 2) - 1;
+
+            controle[0] = 0;
+          } else {
+            controle[0] = 1;
+          }
+
+          controle[1] = 0;
+          controle[2] = 0;
+          controle[3] = 1;
+          controle[4] = 0;
+          controle[5] = "10";
+          controle[6] = "000";
+        
+        // JN
+        } else if (opcode == "01011") {
+          if (log[i - 1][4][2] == true) {
+            let md = instrucao.substring(8, 16);
+            pc = parseInt(md, 2) - 1;
+
+            controle[0] = 0;
+          } else {
+            controle[0] = 1;
+          }
+
+          controle[1] = 0;
+          controle[2] = 0;
+          controle[3] = 1;
+          controle[4] = 0;
+          controle[5] = "10";
+          controle[6] = "000";
+        
+        // JMP
+        } else if (opcode == "01100") {
+          let md = instrucao.substring(8, 16);
+          pc = parseInt(md, 2) - 1;
+
+          controle[0] = 0;
+          controle[1] = 0;
+          controle[2] = 0;
+          controle[3] = 1;
+          controle[4] = 0;
+          controle[5] = "10";
+          controle[6] = "000";
+        
+        // HLT
+        } else if (opcode == "01101") {
+          break;
+        }
+
+        pc = pc + 1;
+        limite = limite + 1;
+        if (limite > 1000) {
+          break;
+        }
+      }
+
+    for (let i = 0; i < 255; i++) {
+      let m_input = document.getElementById("m_ins" + i).value;
+      let p1 = parseInt(m_input.substring(0, 8), 2).toString(16);
+      let p2 = parseInt(complemento_8(m_input.substring(8, 16)), 2).toString(16);
+      let aux = p1 + p2;
+      while (aux.length < 4) {
+        aux = "0" + aux;
+      }
+      document.getElementById("m_ins" + i).value = aux
+    }
+
+      console.log(log);
+
+      novo_label = document.createElement('label');
+      novo_label.textContent = "Compilação terminou.";
+      novo_label.style.color = "green";
+      div_log.appendChild(novo_label);
+    }
+
+    const compilar = document.getElementById("compilar");
+    compilar.addEventListener("click", compilacao);
+
+    const container = document.getElementById('m_instrucao');
+    for (let i = 0; i <= 255; i++) {
+      const label = document.createElement('label');
+      label.style.display = 'flex';
+      label.style.alignItems = 'center';
+      label.style.gap = '4px';
+
+      const text = document.createTextNode(i);
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.id = "m_ins" + i
+      input.disabled = true;
+      input.value = "0000";
+
+      input.style.width = '50px';
+      input.style.minWidth = '50px';
+      input.style.maxWidth = '50px';
+
+      label.appendChild(text);
+      label.appendChild(input);
+      container.appendChild(label);
+    }
+
+    const container2 = document.getElementById('m_dados');
+    for (let i = 0; i <= 255; i++) {
+      const label = document.createElement('label');
+      label.style.display = 'flex';
+      label.style.alignItems = 'center';
+      label.style.gap = '4px';
+
+      const text = document.createTextNode(i);
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.id = "m_dad" + i
+      input.disabled = true;
+      input.value = "0000";
+
+      input.style.width = '50px';
+      input.style.minWidth = '50px';
+      input.style.maxWidth = '50px';
+
+      label.appendChild(text);
+      label.appendChild(input);
+      container2.appendChild(label);
+    }
+
+    const container3 = document.getElementById('gpr');
+    for (let i = 0; i < 8; i++) {
+      const label = document.createElement('label');
+      label.style.display = 'flex';
+      label.style.alignItems = 'center';
+      label.style.gap = '4px';
+
+      const text = document.createTextNode(i);
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.disabled = true;
+      input.id = "reg" + i;
+      input.value = "0000";
+
+      input.style.width = '50px';
+      input.style.minWidth = '50px';
+      input.style.maxWidth = '50px';
+
+      label.appendChild(text);
+      label.appendChild(input);
+      container3.appendChild(label);
+    }
+
+    const boxes = {
+      box1: document.getElementById("mux1"),
+      box2: document.getElementById("p1_mux1"),
+      box3: document.getElementById("p2_mux1"),
+      box4: document.getElementById("p1_pipe"),
+
+      box5: document.getElementById("ula_pc"),
+      box6: document.getElementById("p4_mux1"),
+      box7: document.getElementById("p3_mux1"),
+
+      box8: document.getElementById("pc"),
+
+      box9: document.getElementById("mais_um"),
+
+      box10: document.getElementById("p1_pc"),
+      box11: document.getElementById("m_instr"),
+      box12: document.getElementById("p2_pc"),
+
+      box13: document.getElementById("p2_pipe"),
+      box14: document.getElementById("m_dads"),
+
+      box15: document.getElementById("pipe"),
+
+      box16: document.getElementById("mux2"),
+      box17: document.getElementById("mux3"),
+
+      box18: document.getElementById("m_gpr"),
+
+      box19: document.getElementById("up_pipe"),
+
+      box20: document.getElementById("p1_controle"),
+      box21: document.getElementById("p2_controle"),
+      box22: document.getElementById("controle"),
+
+      box23: document.getElementById("ula"),
+
+      box24: document.getElementById("p1_gpr"),
+      box25: document.getElementById("p2_gpr"),
+      box26: document.getElementById("p3_gpr"),
+      box27: document.getElementById("p4_gpr"),
+
+      box28: document.getElementById("p1_ula"),
+      box29: document.getElementById("p2_ula"),
+      box30: document.getElementById("p3_ula"),
+      box31: document.getElementById("p4_ula"),
+
+      box32: document.getElementById("p_mux_pc"),
+
+      box33: document.getElementById("p_gpr_up"),
+      box34: document.getElementById("p_gpr_down"),
+      box35: document.getElementById("p_mux2_up"),
+      box36: document.getElementById("p_mux2_down"),
+      box37: document.getElementById("p_mux3_up"),
+
+      // Controle
+      box38: document.getElementById("p_controle_muxPC"),
+      box39: document.getElementById("p_controle_rdMem"),
+      box40: document.getElementById("p_controle_wrMem"),
+      box41: document.getElementById("p_controle_muxAReg0"),
+      box42: document.getElementById("p_controle_muxAReg1"),
+      box43: document.getElementById("p_controle_muxAReg2"),
+      box44: document.getElementById("p_controle_wrReg"),
+      box45: document.getElementById("p_controle_muxDReg0"),
+      box46: document.getElementById("p_controle_muxDReg1"),
+      box47: document.getElementById("p_controle_muxDReg2"),
+      box48: document.getElementById("p_controle_opULA"),
+      box49: document.getElementById("p_controle_opULA_flag"),
+
+      //controle multiciclo
+      box56: document.getElementById("p_controle_pc"),
+      box57: document.getElementById("p_controle_ir"),
+
+      box50: document.getElementById("mar"),
+      box51: document.getElementById("ir"),
+      box52: document.getElementById("mdr"),
+      box53: document.getElementById("a"),
+      box54: document.getElementById("b"),
+      box55: document.getElementById("r"),
+    };
+
+    const lines = {
+      line1: document.getElementById("line1"),
+      line2: document.getElementById("line2"),
+      line3: document.getElementById("line3"),
+
+      line4: document.getElementById("line4"),
+      line5: document.getElementById("line5"),
+      line6: document.getElementById("line6"),
+
+      line7: document.getElementById("line7"),
+
+      line8: document.getElementById("line8"),
+
+      line9: document.getElementById("line9"),
+      line10: document.getElementById("line10"),
+      line11: document.getElementById("line11"),
+      line12: document.getElementById("line12"),
+
+      line13: document.getElementById("line13"),
+      line14: document.getElementById("line14"),
+
+      line15: document.getElementById("line15"),
+
+      line16: document.getElementById("line16"),
+
+      line17: document.getElementById("line17"),
+      line18: document.getElementById("line18"),
+      line19: document.getElementById("line19"),
+      line20: document.getElementById("line20"),
+      line21: document.getElementById("line21"),
+      line22: document.getElementById("line22"),
+
+      line23: document.getElementById("line23"),
+      line24: document.getElementById("line24"),
+
+      line25: document.getElementById("line25"),
+
+      line26: document.getElementById("line26"),
+      line27: document.getElementById("line27"),
+      line28: document.getElementById("line28"),
+
+      line29: document.getElementById("line29"),
+      line30: document.getElementById("line30"),
+
+      line31: document.getElementById("line31"),
+      line32: document.getElementById("line32"),
+      line33: document.getElementById("line33"),
+      line34: document.getElementById("line34"),
+
+      line35: document.getElementById("line35"),
+      line36: document.getElementById("line36"),
+      line37: document.getElementById("line37"),
+      line38: document.getElementById("line38"),
+      line39: document.getElementById("line39"),
+
+      line40: document.getElementById("line40"),
+
+      line41: document.getElementById("line41"),
+      line42: document.getElementById("line42"),
+      line43: document.getElementById("line43"),
+      line44: document.getElementById("line44"),
+      line45: document.getElementById("line45"),
+
+      line46: document.getElementById("line46"),
+      line47: document.getElementById("line47"),
+
+      // Controle
+      line48: document.getElementById("line48"),
+      line49: document.getElementById("line49"),
+      line50: document.getElementById("line50"),
+      line51: document.getElementById("line51"),
+      line52: document.getElementById("line52"),
+      line53: document.getElementById("line53"),
+      line54: document.getElementById("line54"),
+      line55: document.getElementById("line55"),
+      line56: document.getElementById("line56"),
+      line57: document.getElementById("line57"),
+      line58: document.getElementById("line58"),
+      line59: document.getElementById("line59"),
+      line60: document.getElementById("line60"),
+      line61: document.getElementById("line61"),
+      line62: document.getElementById("line62"),
+      line63: document.getElementById("line63"),
+      line64: document.getElementById("line64"),
+      line65: document.getElementById("line65"),
+      line66: document.getElementById("line66"),
+      line67: document.getElementById("line67"),
+
+      // controle multiciclo
+      line117: document.getElementById("line117"),
+      line118: document.getElementById("line118"),
+      line119: document.getElementById("line119"),
+      line120: document.getElementById("line120"),
+
+      // MUX Interno
+      line68: document.getElementById("line68"),
+      line69: document.getElementById("line69"),
+
+      line70: document.getElementById("line70"),
+      line71: document.getElementById("line71"),
+
+      line72: document.getElementById("line72"),
+      line73: document.getElementById("line73"),
+      line74: document.getElementById("line74"),
+
+      // Linhas complementares
+      line75: document.getElementById("line75"),
+      line76: document.getElementById("line76"),
+      line77: document.getElementById("line77"),
+      line78: document.getElementById("line78"),
+      line79: document.getElementById("line79"),
+      line80: document.getElementById("line80"),
+      line81: document.getElementById("line81"),
+      line82: document.getElementById("line82"),
+      line83: document.getElementById("line83"),
+      line84: document.getElementById("line84"),
+      line85: document.getElementById("line85"),
+      line86: document.getElementById("line86"),
+      line87: document.getElementById("line87"),
+      line88: document.getElementById("line88"),
+      line89: document.getElementById("line89"),
+      line90: document.getElementById("line90"),
+      line91: document.getElementById("line91"),
+      line92: document.getElementById("line92"),
+      line93: document.getElementById("line93"),
+      line94: document.getElementById("line94"),
+      line95: document.getElementById("line95"),
+      line96: document.getElementById("line96"),
+
+      line97: document.getElementById("line97"),
+      line98: document.getElementById("line98"),
+      line99: document.getElementById("line99"),
+      line100: document.getElementById("line100"),
+      line101: document.getElementById("line101"),
+      line102: document.getElementById("line102"),
+      line103: document.getElementById("line103"),
+      line104: document.getElementById("line104"),
+
+      line105: document.getElementById("line105"),
+      line106: document.getElementById("line106"),
+      line107: document.getElementById("line107"),
+      line108: document.getElementById("line108"),
+      line109: document.getElementById("line109"),
+      line110: document.getElementById("line110"),
+
+      line111: document.getElementById("line111"),
+      line112: document.getElementById("line112"),
+      line113: document.getElementById("line113"),
+      line114: document.getElementById("line114"),
+      line115: document.getElementById("line115"),
+      line116: document.getElementById("line116"),
+
+      line121: document.getElementById("line121"),
+      line122: document.getElementById("line122"),
+      line123: document.getElementById("line123"),
+      line124: document.getElementById("line124"),
+    };
+
+    const svg = document.getElementById("svg");
+    const button_play = document.getElementById("button_play");
+    const button_step = document.getElementById("button_step");
+    const button_play_step = document.getElementById("button_play_step");
+    const button_reset = document.getElementById("button_reset");
+    let data = document.getElementById("data1");
+
+    function getConnectionPoints(from, to) {
+      const rectFrom = from.getBoundingClientRect();
+      const rectTo = to.getBoundingClientRect();
+
+      const x1 = rectFrom.left + rectFrom.width;
+      const y1 = rectFrom.top + rectFrom.height / 2;
+
+      const x2 = rectTo.left;
+      const y2 = rectTo.top + rectTo.height / 2;
+
+      return { x1, y1, x2, y2 };
+    }
+
+    function updateLines() {
+      const p1 = getConnectionPoints(boxes.box4, boxes.box3);
+      const p2 = getConnectionPoints(boxes.box3, boxes.box2);
+      const p3 = getConnectionPoints(boxes.box2, boxes.box1);
+      // complemento
+      const p79 = getConnectionPoints(boxes.box2, boxes.box1);
+
+      const p4 = getConnectionPoints(boxes.box5, boxes.box6);
+      const p5 = getConnectionPoints(boxes.box6, boxes.box7);
+      const p6 = getConnectionPoints(boxes.box7, boxes.box1);
+      // complemento
+      const p78 = getConnectionPoints(boxes.box7, boxes.box1);
+
+      const p7 = getConnectionPoints(boxes.box1, boxes.box8);
+      // complemento
+      const p89 = getConnectionPoints(boxes.box1, boxes.box8);
+
+      const p8 = getConnectionPoints(boxes.box9, boxes.box5);
+      // complemento
+      const p75 = getConnectionPoints(boxes.box9, boxes.box5);
+
+      const p9 = getConnectionPoints(boxes.box8, boxes.box10);
+      const p10 = getConnectionPoints(boxes.box10, boxes.box11);
+      // complemento
+      const p77 = getConnectionPoints(boxes.box10, boxes.box11);
+
+      const p11 = getConnectionPoints(boxes.box10, boxes.box12);
+      const p12 = getConnectionPoints(boxes.box12, boxes.box5);
+      // complemento
+      const p76 = getConnectionPoints(boxes.box12, boxes.box5);
+
+      const p13 = getConnectionPoints(boxes.box4, boxes.box13);
+      const p14 = getConnectionPoints(boxes.box13, boxes.box14);
+      // complemento
+      const p86 = getConnectionPoints(boxes.box13, boxes.box14);
+
+      const p15 = getConnectionPoints(boxes.box15, boxes.box4);
+
+      const p16 = getConnectionPoints(boxes.box11, boxes.box15);
+
+      const p17 = getConnectionPoints(boxes.box14, boxes.box17);
+      const p18 = getConnectionPoints(boxes.box15, boxes.box17);
+      // complemento
+      const p85 = getConnectionPoints(boxes.box15, boxes.box17);
+
+      const p19 = getConnectionPoints(boxes.box15, boxes.box16);
+      // complemento
+      const p82 = getConnectionPoints(boxes.box15, boxes.box16);
+
+      const p20 = getConnectionPoints(boxes.box15, boxes.box16);
+      // complemento
+      const p83 = getConnectionPoints(boxes.box15, boxes.box16);
+
+      const p21 = getConnectionPoints(boxes.box15, boxes.box18);
+      // complemento
+      const p80 = getConnectionPoints(boxes.box15, boxes.box18);
+      
+      const p22 = getConnectionPoints(boxes.box15, boxes.box18);
+      // complemento
+      const p81 = getConnectionPoints(boxes.box15, boxes.box18);
+
+      const p23 = getConnectionPoints(boxes.box16, boxes.box18);
+      // complemento
+      const p87 = getConnectionPoints(boxes.box16, boxes.box18);
+
+      const p24 = getConnectionPoints(boxes.box17, boxes.box18);
+      // complemento
+      const p88 = getConnectionPoints(boxes.box17, boxes.box18);
+
+      const p25 = getConnectionPoints(boxes.box15, boxes.box19);
+
+      const p26 = getConnectionPoints(boxes.box19, boxes.box20);
+      const p27 = getConnectionPoints(boxes.box20, boxes.box21);
+      const p28 = getConnectionPoints(boxes.box21, boxes.box22);
+      // complemento
+      const p84 = getConnectionPoints(boxes.box21, boxes.box22);
+
+      const p29 = getConnectionPoints(boxes.box18, boxes.box23);
+      const p30 = getConnectionPoints(boxes.box18, boxes.box23);
+      // complemento
+      const p122 = getConnectionPoints(boxes.box18, boxes.box23);
+
+      const p31 = getConnectionPoints(boxes.box24, boxes.box25);
+      const p32 = getConnectionPoints(boxes.box25, boxes.box26);
+      const p33 = getConnectionPoints(boxes.box26, boxes.box27);
+      const p34 = getConnectionPoints(boxes.box27, boxes.box14);
+      //complemento
+      const p121 = getConnectionPoints(boxes.box27, boxes.box14);
+
+      const p35 = getConnectionPoints(boxes.box23, boxes.box28);
+      const p36 = getConnectionPoints(boxes.box28, boxes.box29);
+      const p37 = getConnectionPoints(boxes.box29, boxes.box30);
+      const p38 = getConnectionPoints(boxes.box30, boxes.box31);
+      const p39 = getConnectionPoints(boxes.box31, boxes.box17);
+      // complemento
+      const p123 = getConnectionPoints(boxes.box31, boxes.box17);
+
+      const p40 = getConnectionPoints(boxes.box19, boxes.box32);
+
+      const p41 = getConnectionPoints(boxes.box19, boxes.box33);
+      const p42 = getConnectionPoints(boxes.box19, boxes.box34);
+      const p43 = getConnectionPoints(boxes.box19, boxes.box35);
+      const p44 = getConnectionPoints(boxes.box19, boxes.box36);
+      const p45 = getConnectionPoints(boxes.box19, boxes.box37);
+
+      const p46 = getConnectionPoints(boxes.box18, boxes.box24);
+      const p47 = getConnectionPoints(boxes.box24, boxes.box23);
+
+      // Controle
+      const p48 = getConnectionPoints(boxes.box22, boxes.box38);
+      const p49 = getConnectionPoints(boxes.box38, boxes.box1);
+      // complementar
+      const p90 = getConnectionPoints(boxes.box38, boxes.box1);
+      // tele sinal
+      const p97 = getConnectionPoints(boxes.box38, boxes.box1);
+      
+      const p50 = getConnectionPoints(boxes.box22, boxes.box39);
+      const p51 = getConnectionPoints(boxes.box39, boxes.box14);
+      // complementar
+      const p91 = getConnectionPoints(boxes.box39, boxes.box14);
+      // tele sinal
+      const p98 = getConnectionPoints(boxes.box39, boxes.box14);
+
+      const p52 = getConnectionPoints(boxes.box22, boxes.box40);
+      const p53 = getConnectionPoints(boxes.box40, boxes.box14);
+      // complementar
+      const p92 = getConnectionPoints(boxes.box40, boxes.box14);
+      // tele sinal
+      const p99 = getConnectionPoints(boxes.box40, boxes.box14);
+      
+      const p54 = getConnectionPoints(boxes.box22, boxes.box41);
+      const p55 = getConnectionPoints(boxes.box41, boxes.box42);
+      const p56 = getConnectionPoints(boxes.box42, boxes.box43);
+      const p57 = getConnectionPoints(boxes.box43, boxes.box16);
+      // complementar
+      const p93 = getConnectionPoints(boxes.box43, boxes.box16);
+      // tele sinal
+      const p100 = getConnectionPoints(boxes.box43, boxes.box16);
+
+      const p58 = getConnectionPoints(boxes.box22, boxes.box44);
+      const p59 = getConnectionPoints(boxes.box44, boxes.box18);
+      // complementar
+      const p94 = getConnectionPoints(boxes.box44, boxes.box18);
+      // tele sinal
+      const p101 = getConnectionPoints(boxes.box44, boxes.box18);
+
+      const p60 = getConnectionPoints(boxes.box22, boxes.box45);
+      const p61 = getConnectionPoints(boxes.box45, boxes.box46);
+      const p62 = getConnectionPoints(boxes.box46, boxes.box47);
+      const p63 = getConnectionPoints(boxes.box47, boxes.box17);
+      // complementar
+      const p95 = getConnectionPoints(boxes.box47, boxes.box17);
+      // tele sinal
+      const p102 = getConnectionPoints(boxes.box47, boxes.box17);
+
+      const p64 = getConnectionPoints(boxes.box22, boxes.box48);
+      const p65 = getConnectionPoints(boxes.box48, boxes.box23);
+      // complementar
+      const p96 = getConnectionPoints(boxes.box48, boxes.box23);
+      // tele sinal
+      const p103 = getConnectionPoints(boxes.box48, boxes.box23);
+
+      const p66 = getConnectionPoints(boxes.box23, boxes.box49);
+      const p67 = getConnectionPoints(boxes.box49, boxes.box22);
+      // tele sinal
+      const p104 = getConnectionPoints(boxes.box49, boxes.box22);
+
+      // controle multiciclo
+      const p117 = getConnectionPoints(boxes.box22, boxes.box56);
+      const p118 = getConnectionPoints(boxes.box56, boxes.box8);
+      const p119 = getConnectionPoints(boxes.box22, boxes.box57);
+      const p120 = getConnectionPoints(boxes.box57, boxes.box51);
+
+      // MUX Interno
+      const p68 = getConnectionPoints(boxes.box1, boxes.box1);
+      const p69 = getConnectionPoints(boxes.box1, boxes.box1);
+
+      const p70 = getConnectionPoints(boxes.box16, boxes.box16);
+      const p71 = getConnectionPoints(boxes.box16, boxes.box16);
+
+      const p72 = getConnectionPoints(boxes.box17, boxes.box17);
+      const p73 = getConnectionPoints(boxes.box17, boxes.box17);
+      const p74 = getConnectionPoints(boxes.box17, boxes.box17);
+
+      // multiciclo
+      const p105 = getConnectionPoints(boxes.box15, boxes.box50);
+      const p111 = getConnectionPoints(boxes.box50, boxes.box4);
+
+      const p106 = getConnectionPoints(boxes.box51, boxes.box15);
+      const p112 = getConnectionPoints(boxes.box11, boxes.box51);
+
+      const p107 = getConnectionPoints(boxes.box14, boxes.box52);
+      const p113 = getConnectionPoints(boxes.box52, boxes.box17);
+
+      const p108 = getConnectionPoints(boxes.box18, boxes.box53);
+      const p114 = getConnectionPoints(boxes.box53, boxes.box24);
+
+      const p109 = getConnectionPoints(boxes.box18, boxes.box54);
+      const p115 = getConnectionPoints(boxes.box54, boxes.box23);
+      // complemento
+      const p124 = getConnectionPoints(boxes.box54, boxes.box23);
+
+      const p110 = getConnectionPoints(boxes.box29, boxes.box55);
+      const p116 = getConnectionPoints(boxes.box55, boxes.box30);
+
+      lines.line1.setAttribute("d", `M ${p1.x1-50},${p1.y1} L ${p1.x2},${p1.y2}`);
+      lines.line2.setAttribute("d", `M ${p2.x1},${p2.y1} L ${p2.x2},${p2.y2+10}`);
+      lines.line3.setAttribute("d", `M ${p3.x1},${p3.y1+10} L ${p3.x2-20},${p3.y2-15}`);
+      // complemento
+      lines.line79.setAttribute("d", `M ${p79.x1},${p79.y1+10} L ${p79.x2},${p79.y2-15}`);
+
+      lines.line4.setAttribute("d", `M ${p4.x1-73},${p4.y1} L ${p4.x2},${p4.y2+25}`);
+      lines.line5.setAttribute("d", `M ${p5.x1},${p5.y1+25} L ${p5.x2},${p5.y2+15}`);
+      lines.line6.setAttribute("d", `M ${p6.x1},${p6.y1+15} L ${p6.x2-20},${p6.y2+15}`);
+      // complemento
+      lines.line78.setAttribute("d", `M ${p78.x1},${p78.y1+15} L ${p78.x2},${p78.y2+15}`);
+
+      lines.line7.setAttribute("d", `M ${p7.x1},${p7.y1} L ${p7.x2+37.5},${p7.y2}`);
+      // complemento
+      lines.line89.setAttribute("d", `M ${p89.x1},${p89.y1} L ${p89.x2},${p89.y2}`);
+
+      lines.line8.setAttribute("d", `M ${p8.x1-37.5},${p8.y1} L ${p8.x2+92.5},${p8.y2+41.5}`);
+      // complemento
+      lines.line75.setAttribute("d", `M ${p75.x1-37.5},${p75.y1} L ${p75.x2+72.5},${p75.y2+41.5}`);
+
+      lines.line9.setAttribute("d", `M ${p9.x1},${p9.y1} L ${p9.x2-20},${p9.y2+5}`);
+      lines.line10.setAttribute("d", `M ${p10.x1-20},${p10.y1+5} L ${p10.x2-20},${p10.y2-105}`);
+      // complemento
+      lines.line77.setAttribute("d", `M ${p77.x1-20},${p77.y1+5} L ${p77.x2},${p77.y2-105}`);
+
+      lines.line11.setAttribute("d", `M ${p11.x1-20},${p11.y1+5} L ${p11.x2-20},${p11.y2+7.5}`);
+      lines.line12.setAttribute("d", `M ${p12.x1-20},${p12.y1+6.5} L ${p12.x2+92.5},${p12.y2-50}`);
+      // complemento
+      lines.line76.setAttribute("d", `M ${p76.x1-20},${p76.y1+6.5} L ${p76.x2+72.5},${p76.y2-50}`);
+
+      lines.line13.setAttribute("d", `M ${p13.x1-50},${p13.y1} L ${p13.x2-50},${p13.y2}`);
+      lines.line14.setAttribute("d", `M ${p14.x1-50},${p14.y1} L ${p14.x2-20},${p14.y2-5}`);
+      // complemento
+      lines.line86.setAttribute("d", `M ${p86.x1-50},${p86.y1} L ${p86.x2},${p86.y2-5}`);
+
+      lines.line15.setAttribute("d", `M ${p15.x1},${p15.y1-112.5} L ${p15.x2-50},${p15.y2}`);
+
+      lines.line16.setAttribute("d", `M ${p16.x1},${p16.y1-147.5} L ${p16.x2},${p16.y2-55}`);
+
+      lines.line17.setAttribute("d", `M ${p17.x1},${p17.y1+5} L ${p17.x2},${p17.y2}`);
+      lines.line18.setAttribute("d", `M ${p18.x1},${p18.y1+132.5} L ${p18.x2-20},${p18.y2-15}`);
+      // complemento
+      lines.line85.setAttribute("d", `M ${p85.x1},${p85.y1+132.5} L ${p85.x2},${p85.y2-15}`);
+
+      lines.line19.setAttribute("d", `M ${p19.x1},${p19.y1+42.5} L ${p19.x2-10},${p19.y2+15}`);
+      // complemento
+      lines.line82.setAttribute("d", `M ${p82.x1},${p82.y1+42.5} L ${p82.x2},${p82.y2+15}`);
+      
+      lines.line20.setAttribute("d", `M ${p20.x1},${p20.y1+12.5} L ${p20.x2-10},${p20.y2-15}`);
+      // complelento
+      lines.line83.setAttribute("d", `M ${p83.x1},${p83.y1+12.5} L ${p83.x2},${p83.y2-15}`);
+
+      lines.line21.setAttribute("d", `M ${p21.x1},${p21.y1-34} L ${p21.x2-10},${p21.y2-70}`);
+      // complemento
+      lines.line80.setAttribute("d", `M ${p80.x1},${p80.y1-34} L ${p80.x2},${p80.y2-70}`);
+
+      lines.line22.setAttribute("d", `M ${p22.x1},${p22.y1-69} L ${p22.x2-10},${p22.y2-105}`);
+      // complemento
+      lines.line81.setAttribute("d", `M ${p81.x1},${p81.y1-69} L ${p81.x2},${p81.y2-105}`);
+
+      lines.line23.setAttribute("d", `M ${p23.x1},${p23.y1} L ${p23.x2-10},${p23.y2-10}`);
+      // complemento
+      lines.line87.setAttribute("d", `M ${p87.x1},${p87.y1} L ${p87.x2},${p87.y2-10}`);
+
+      lines.line24.setAttribute("d", `M ${p24.x1},${p24.y1} L ${p24.x2-30},${p24.y2+110}`);
+      // complemento
+      lines.line88.setAttribute("d", `M ${p88.x1},${p88.y1} L ${p88.x2},${p88.y2+110}`);
+
+      // tipo pipe
+      lines.line25.setAttribute("d", `M ${p25.x1-5},${p25.y1-55} L ${p25.x2-22.5},${p25.y2+20}`);
+
+      lines.line26.setAttribute("d", `M ${p26.x1-20},${p26.y1+20} L ${p26.x2+35},${p26.y2+5}`);
+      lines.line27.setAttribute("d", `M ${p27.x1+35},${p27.y1} L ${p27.x2+50},${p27.y2}`);
+      lines.line28.setAttribute("d", `M ${p28.x1+50},${p28.y1} L ${p28.x2+50},${p28.y2+50}`);
+      // complemento
+      lines.line84.setAttribute("d", `M ${p84.x1+50},${p84.y1} L ${p84.x2+50},${p84.y2+37.5}`);
+
+      lines.line29.setAttribute("d", `M ${p29.x1},${p29.y1-67.5} L ${p29.x2+4},${p29.y2-75}`);
+      lines.line30.setAttribute("d", `M ${p30.x1},${p30.y1+81} L ${p30.x2-26},${p30.y2+72.5}`);
+      // complemento
+      lines.line122.setAttribute("d", `M ${p122.x1},${p122.y1+81} L ${p122.x2+4},${p122.y2+72.5}`);
+
+      lines.line31.setAttribute("d", `M ${p31.x1},${p31.y1+8} L ${p31.x2},${p31.y2+35}`);
+      lines.line32.setAttribute("d", `M ${p32.x1},${p32.y1+35} L ${p32.x2},${p32.y2+35}`);
+      lines.line33.setAttribute("d", `M ${p33.x1},${p33.y1+35} L ${p33.x2},${p33.y2+35}`);
+      lines.line34.setAttribute("d", `M ${p34.x1},${p34.y1+35} L ${p34.x2-30},${p34.y2+110}`);
+      // complemento
+      lines.line121.setAttribute("d", `M ${p121.x1},${p121.y1+35} L ${p121.x2},${p121.y2+110}`);
+
+      lines.line35.setAttribute("d", `M ${p35.x1-2},${p35.y1-10} L ${p35.x2},${p35.y2}`);
+      lines.line36.setAttribute("d", `M ${p36.x1},${p36.y1} L ${p36.x2},${p36.y2}`);
+      lines.line37.setAttribute("d", `M ${p37.x1},${p37.y1} L ${p37.x2+30},${p37.y2}`);
+      lines.line38.setAttribute("d", `M ${p38.x1+30},${p38.y1} L ${p38.x2+30},${p38.y2-10}`);
+      lines.line39.setAttribute("d", `M ${p39.x1+30},${p39.y1-10} L ${p39.x2-30},${p39.y2+15}`);
+      // complemento
+      lines.line123.setAttribute("d", `M ${p123.x1+30},${p123.y1-10} L ${p123.x2},${p123.y2+15}`);
+
+      lines.line40.setAttribute("d", `M ${p40.x1},${p40.y1} L ${p40.x2+50},${p40.y2+10}`);
+
+      // pipe meio
+      lines.line41.setAttribute("d", `M ${p41.x1-20},${p41.y1} L ${p41.x2+30},${p41.y2+45}`);
+      lines.line42.setAttribute("d", `M ${p42.x1-20},${p42.y1} L ${p42.x2+30},${p42.y2+55}`);
+      lines.line43.setAttribute("d", `M ${p43.x1-20},${p43.y1} L ${p43.x2+30},${p43.y2+35}`);
+      lines.line44.setAttribute("d", `M ${p44.x1-20},${p44.y1} L ${p44.x2+30},${p44.y2+25}`);
+      lines.line45.setAttribute("d", `M ${p45.x1-20},${p45.y1} L ${p45.x2+30},${p45.y2+35}`);
+
+      lines.line46.setAttribute("d", `M ${p46.x1},${p46.y1-67.5} L ${p46.x2},${p46.y2+8}`);
+      lines.line47.setAttribute("d", `M ${p47.x1},${p47.y1} L ${p47.x2-26},${p47.y2-75}`);
+
+      // Controle
+      lines.line48.setAttribute("d", `M ${p48.x1-100},${p48.y1-5} L ${p48.x2+5},${p48.y2+35}`);
+      lines.line49.setAttribute("d", `M ${p49.x1+5},${p49.y1+5} L ${p49.x2+15},${p49.y2-42.5}`);
+      // complementar
+      lines.line90.setAttribute("d", `M ${p90.x1+5},${p90.y1+35} L ${p90.x2+15},${p90.y2-24}`);
+      // tele sinal
+      lines.line97.setAttribute("d", `M ${p97.x1+5},${p97.y1+185} L ${p97.x2+15},${p97.y2-24}`);
+
+      lines.line50.setAttribute("d", `M ${p50.x1-100},${p50.y1+10} L ${p50.x2-15},${p50.y2+37.5}`);
+      lines.line51.setAttribute("d", `M ${p51.x1-12.5},${p51.y1+15} L ${p51.x2+35},${p51.y2-192.5}`);
+      // complementar
+      lines.line91.setAttribute("d", `M ${p91.x1-15},${p91.y1+37.5} L ${p91.x2+35},${p91.y2-180}`);
+      // tele sinal
+      lines.line98.setAttribute("d", `M ${p98.x1+35},${p98.y1+170} L ${p98.x2+35},${p98.y2-180}`);
+
+      lines.line52.setAttribute("d", `M ${p52.x1-100},${p52.y1+22.5} L ${p52.x2-75},${p52.y2+40}`);
+      lines.line53.setAttribute("d", `M ${p53.x1-72.5},${p53.y1+25} L ${p53.x2+75},${p53.y2-192.5}`);
+      // complementar
+      lines.line92.setAttribute("d", `M ${p92.x1-75},${p92.y1+40} L ${p92.x2+75},${p92.y2-180}`);
+      // tele sinal
+      lines.line99.setAttribute("d", `M ${p99.x1+35},${p99.y1+160} L ${p99.x2+135},${p99.y2-180}`);
+
+      lines.line54.setAttribute("d", `M ${p54.x1},${p54.y1+30} L ${p54.x2+20},${p54.y2+47.5}`);
+      lines.line55.setAttribute("d", `M ${p55.x1+20},${p55.y1+47.5} L ${p55.x2+20},${p55.y2+20}`);
+      lines.line56.setAttribute("d", `M ${p56.x1+20},${p56.y1+20} L ${p56.x2+7.5},${p56.y2+20}`);
+      lines.line57.setAttribute("d", `M ${p57.x1+7.5},${p57.y1+20} L ${p57.x2+15},${p57.y2-42.5}`);
+      // complementar
+      lines.line93.setAttribute("d", `M ${p93.x1+7.5},${p93.y1+20} L ${p93.x2+15},${p93.y2-25}`);
+      // tele sinal
+      lines.line100.setAttribute("d", `M ${p100.x1+35},${p100.y1+110} L ${p100.x2+15},${p100.y2-25}`);
+
+      lines.line58.setAttribute("d", `M ${p58.x1},${p58.y1+10} L ${p58.x2-20},${p58.y2+37.5}`);
+      lines.line59.setAttribute("d", `M ${p59.x1-20},${p59.y1+37.5} L ${p59.x2+90},${p59.y2-137.5}`);
+      // complementar
+      lines.line94.setAttribute("d", `M ${p94.x1-20},${p94.y1+37.5} L ${p94.x2+90},${p94.y2-125}`);
+      // tele sinal
+      lines.line101.setAttribute("d", `M ${p101.x1+15},${p101.y1+120} L ${p101.x2+125},${p101.y2-125}`);
+
+      lines.line60.setAttribute("d", `M ${p60.x1},${p60.y1-10} L ${p60.x2},${p60.y2+27.5}`);
+      lines.line61.setAttribute("d", `M ${p61.x1},${p61.y1+27.5} L ${p61.x2},${p61.y2}`);
+      lines.line62.setAttribute("d", `M ${p62.x1},${p62.y1} L ${p62.x2+2.5},${p62.y2}`);
+      lines.line63.setAttribute("d", `M ${p63.x1+2.5},${p63.y1} L ${p63.x2+12.5},${p63.y2+42.5}`);
+      // complementar
+      lines.line95.setAttribute("d", `M ${p95.x1+2.5},${p95.y1} L ${p95.x2+12.5},${p95.y2+25.5}`);
+      // tele sinal
+      lines.line102.setAttribute("d", `M ${p102.x1+32.5},${p102.y1-50} L ${p102.x2+12.5},${p102.y2+25.5}`);
+
+      lines.line64.setAttribute("d", `M ${p64.x1},${p64.y1-25} L ${p64.x2+2.5},${p64.y2+22.5}`);
+      lines.line65.setAttribute("d", `M ${p65.x1+2.5},${p65.y1+22.5} L ${p65.x2+42.5},${p65.y2-117.5}`);
+      // complementar
+      lines.line96.setAttribute("d", `M ${p65.x1+2.5},${p65.y1+22.5} L ${p65.x2+42.5},${p65.y2-97.5}`);
+      // tele sinal
+      lines.line103.setAttribute("d", `M ${p103.x1+2.5},${p103.y1+175} L ${p103.x2+42.5},${p103.y2-97.5}`);
+
+      lines.line66.setAttribute("d", `M ${p66.x1-25},${p66.y1-82.5} L ${p66.x2+10},${p66.y2+12.5}`);
+      lines.line67.setAttribute("d", `M ${p67.x1+10},${p67.y1+12.5} L ${p67.x2+100},${p67.y2-35}`);
+      // tele sinal
+      lines.line104.setAttribute("d", `M ${p104.x1-225},${p104.y1+12.5} L ${p104.x2+100},${p104.y2-35}`);
+
+      // controle multiciclo
+      lines.line117.setAttribute("d", `M ${p117.x1-100},${p117.y1+2.5} L ${p117.x2+2.5},${p117.y2+7.5}`);
+      lines.line118.setAttribute("d", `M ${p118.x1+2.5},${p118.y1+7.5} L ${p118.x2+27.5},${p118.y2-27.5}`);
+      lines.line119.setAttribute("d", `M ${p119.x1-100},${p119.y1+30} L ${p119.x2},${p119.y2+7.5}`);
+      lines.line120.setAttribute("d", `M ${p120.x1},${p120.y1+7.5} L ${p120.x2+25},${p120.y2-27.5}`);
+
+      // MUXs
+      lines.line68.setAttribute("d", `M ${p68.x1},${p68.y1} L ${p68.x2},${p68.y2-15}`);
+      lines.line69.setAttribute("d", `M ${p69.x1},${p69.y1} L ${p69.x2},${p69.y2+15}`);
+
+      lines.line70.setAttribute("d", `M ${p70.x1},${p70.y1} L ${p70.x2},${p70.y2-15}`);
+      lines.line71.setAttribute("d", `M ${p71.x1},${p71.y1} L ${p71.x2},${p71.y2+15}`);
+
+      lines.line72.setAttribute("d", `M ${p72.x1},${p72.y1} L ${p72.x2},${p72.y2-15}`);
+      lines.line73.setAttribute("d", `M ${p73.x1},${p73.y1} L ${p73.x2},${p73.y2}`);
+      lines.line74.setAttribute("d", `M ${p74.x1},${p74.y1} L ${p74.x2},${p74.y2+15}`);
+
+      // multiciclo
+      lines.line105.setAttribute("d", `M ${p105.x1},${p105.y1-113.5} L ${p105.x2+55},${p105.y2}`);
+      lines.line111.setAttribute("d", `M ${p111.x1-55},${p111.y1} L ${p111.x2-50},${p111.y2}`);
+
+      lines.line106.setAttribute("d", `M ${p106.x1},${p106.y1} L ${p106.x2},${p106.y2-55}`);
+      lines.line112.setAttribute("d", `M ${p112.x1},${p112.y1-145} L ${p112.x2},${p112.y2+0}`);
+
+      lines.line107.setAttribute("d", `M ${p107.x1},${p107.y1+5} L ${p107.x2},${p107.y2}`);
+      lines.line113.setAttribute("d", `M ${p113.x1},${p113.y1} L ${p113.x2},${p113.y2}`);
+
+      lines.line108.setAttribute("d", `M ${p108.x1},${p108.y1-67.5} L ${p108.x2},${p108.y2}`);
+      lines.line114.setAttribute("d", `M ${p114.x1},${p114.y1} L ${p114.x2+44},${p114.y2+7.5}`);
+
+      lines.line109.setAttribute("d", `M ${p109.x1},${p109.y1+82.5} L ${p109.x2},${p109.y2}`);
+      lines.line115.setAttribute("d", `M ${p115.x1},${p115.y1} L ${p115.x2-26},${p115.y2+73.5}`);
+      // complemento
+      lines.line124.setAttribute("d", `M ${p124.x1},${p124.y1} L ${p124.x2+3.5},${p124.y2+73.5}`);
+
+      lines.line110.setAttribute("d", `M ${p110.x1},${p110.y1} L ${p110.x2+55},${p110.y2}`);
+      lines.line116.setAttribute("d", `M ${p116.x1-55},${p116.y1} L ${p116.x2+30},${p116.y2}`);
+    }
+
+    function moveBall(ball, line, onComplete = null) {
+      const start = line.getPointAtLength(0);
+      gsap.set(ball, {
+        x: start.x - 10,
+        y: start.y - 10
+      });
+
+      gsap.to(ball, {
+        duration: 1,
+        ease: "power1.inOut",
+        motionPath: {
+          path: line,
+          align: line,
+          alignOrigin: [0.5, 0.5],
+          autoRotate: false
+        },
+        onComplete
+      });
+    }
+
+    let clones = [];
+    for (let i = 0; i < 30; i++) {
+      clones[i] = data.cloneNode(true);
+      document.body.appendChild(clones[i]);
+      clones[i].innerText = "";
+      
+    }
+
+    let pc = 0;
+    let clock = 0;
+    let currentStep = 1;
+    let reset = false;
+    let reset_in = 0;
+    let hlt = false;
+
+    function decimal(hex) {
+      let valor = parseInt(hex, 16);
+
+      if (valor & 0x8000) {
+        valor = valor - 0x10000;
+      }
+
+      return valor;
+    }
+
+    function advanceData() {
+
+      let tipo_sim = document.getElementById("tipo_simulador").value;
+      let tipo_dado = document.getElementById("tipo_dado").value;
+
+      if (log[clock][1].substring(0, 5) == "00001") { // LDA
+        reset_in = 5;
+      } else if (log[clock][1].substring(0, 5) == "00010") { // LDAi
+        reset_in = 4;
+      } else if (log[clock][1].substring(0, 5) == "00011") { // STA
+        reset_in = 5;
+      } else if (log[clock][1].substring(0, 5) == "00100") { // ADD
+        reset_in = 7;
+      } else if (log[clock][1].substring(0, 5) == "00101") { // SUB
+        reset_in = 7;
+      } else if (log[clock][1].substring(0, 5) == "00110") { // AND
+        reset_in = 7;
+      } else if (log[clock][1].substring(0, 5) == "00111") { // OR
+        reset_in = 7;
+      } else if (log[clock][1].substring(0, 5) == "01000") { // NOT
+        reset_in = 7;
+      } else if (log[clock][1].substring(0, 5) == "01001") { // JZ
+        reset_in = 4;
+      } else if (log[clock][1].substring(0, 5) == "01011") { // JN
+        reset_in = 4;
+      } else if (log[clock][1].substring(0, 5) == "01100") { // JMP
+        reset_in = 4;
+      } else if (log[clock][1].substring(0, 5) == "01101") { // HLT
+        reset_in = 4;
+      }
+
+      if (currentStep === 0) {
+        for (let i = 0; i < clones.length; i++) {
+          clones[i].style.display = "none";
+          clones[i].innerText = "0";
+        }
+
+        document.getElementById("zero").style.backgroundColor = "#d9f4fc";
+        document.getElementById("carry").style.backgroundColor = "#d9f4fc";
+        document.getElementById("negativo").style.backgroundColor = "#d9f4fc";
+
+        document.getElementById("imagem").src = "img/padrao.png";
+
+      } else if (currentStep === 1) {
+
+        if (tipo_sim == "monociclo") {
+          if (clock > 0) {
+            document.getElementById("num_linha" + (log[clock - 1][0])).style.backgroundColor = "";
+            document.getElementById("num_linha" + log[clock][0]).style.backgroundColor = "DeepSkyBlue";
+          } else {
+            document.getElementById("num_linha" + log[clock][0]).style.backgroundColor = "DeepSkyBlue";
+          }
+
+          clones[0].style.display = "block";
+          clones[1].style.display = "block";
+
+          let soma_fixa = "00000001";
+          clones[0].style.width = "40px";
+          soma_fixa = parseInt(soma_fixa, 2).toString(16);
+          while (soma_fixa.length < 2) {
+            soma_fixa = "0" + soma_fixa;
+          }
+
+          if (tipo_dado == "dec") {
+            soma_fixa = decimal(soma_fixa)
+          }
+
+          clones[0].innerText = soma_fixa;
+
+          moveBall(clones[0], lines.line8);
+
+          let valor_pc = log[clock][0].toString(16);
+          while (valor_pc.length < 2) {
+            valor_pc = "0" + valor_pc;
+          }
+
+          clones[1].style.width = "40px";
+
+          if (tipo_dado == "dec") {
+            valor_pc = decimal(valor_pc)
+          }
+          clones[1].innerText = valor_pc;
+          moveBall(clones[1], lines.line9);
+
+          setTimeout(() => {
+            clones[2].style.width = "40px";
+            clones[2].style.display = "block";
+
+            clones[2].innerText = valor_pc;
+
+            moveBall(clones[1], lines.line11);
+            moveBall(clones[2], lines.line10);
+            setTimeout(() => {
+              moveBall(clones[1], lines.line12);
+            }, 1000)
+          }, 1000);
+
+        } else if (tipo_sim == "multiciclo") {
+            if (clock > 0) {
+            document.getElementById("num_linha" + (log[clock - 1][0])).style.backgroundColor = "";
+            document.getElementById("num_linha" + log[clock][0]).style.backgroundColor = "DeepSkyBlue";
+          } else {
+            document.getElementById("num_linha" + log[clock][0]).style.backgroundColor = "DeepSkyBlue";
+          }
+
+          clones[0].style.display = "block";
+          clones[1].style.display = "block";
+
+          let soma_fixa = "00000001";
+          clones[0].style.width = "40px";
+          soma_fixa = parseInt(soma_fixa, 2).toString(16);
+          while (soma_fixa.length < 2) {
+            soma_fixa = "0" + soma_fixa;
+          }
+
+          if (tipo_dado == "dec") {
+            soma_fixa = decimal(soma_fixa)
+          }
+          clones[0].innerText = soma_fixa;
+
+          moveBall(clones[0], lines.line8);
+
+          let valor_pc = log[clock][0].toString(16);
+          while (valor_pc.length < 2) {
+            valor_pc = "0" + valor_pc;
+          }
+
+          clones[1].style.width = "40px";
+
+          if (tipo_dado == "dec") {
+            valor_pc = decimal(valor_pc)
+          }
+          clones[1].innerText = valor_pc;
+          moveBall(clones[1], lines.line9);
+
+          setTimeout(() => {
+            clones[2].style.width = "40px";
+            clones[2].style.display = "block";
+
+            clones[2].innerText = valor_pc;
+
+            moveBall(clones[1], lines.line11);
+            moveBall(clones[2], lines.line10);
+            setTimeout(() => {
+              moveBall(clones[1], lines.line12);
+            }, 1000)
+          }, 1000);
+          
+          clones[3].style.width = "40px";
+          clones[4].style.width = "65px";
+
+          let soma_pc = (log[clock][0] + 1).toString(16);
+          while (soma_pc.length < 2) {
+            soma_pc = "0" + soma_pc;
+          }
+
+          if (tipo_dado == "dec") {
+            soma_pc = decimal(soma_pc)
+          }
+          clones[3].innerText = soma_pc;
+          let p1 = parseInt(log[clock][1].toString().substring(0, 5), 2).toString(16);
+          let p2 = parseInt(log[clock][1].toString().substring(5, 8), 2).toString(16);
+          console.log(log[clock][1].toString().substring(5, 8))
+          let p3 = complemento_8(log[clock][1].toString().substring(8, 16));
+          p3 = parseInt(p3, 2).toString(16);
+          let p4 = "";
+
+          while (p1.length < 2) {
+            p1 = "0" + p1;
+          }
+
+          while (p3.length < 2) {
+            p3 = "0" + p3;
+          }
+
+          if (p1 == "04" || p1 == "05" || p1 == "06" || p1 == "7") {
+            p3 = parseInt(log[clock][1].toString().substring(8, 11), 2).toString(16);
+            p4 = parseInt(log[clock][1].toString().substring(13, 16), 2).toString(16);
+          }
+
+          if (tipo_dado == "dec") {
+            p1 = decimal(p1)
+            p2 = decimal(p2)
+            p3 = decimal(p3)
+            p4 = decimal(p4)
+
+            if (Number.isNaN(p4)) {
+              p4 = ""
+            }
+          }
+          clones[4].innerText = p1 + " " + p2 + " " + p3 + " " + p4;
+
+          setTimeout(() => {
+            moveBall(clones[3], lines.line4);
+
+            setTimeout(() => {
+              moveBall(clones[3], lines.line5);
+              
+            }, 1000);
+            setTimeout(() => {
+              moveBall(clones[3], lines.line6);
+            }, 2000);
+          }, 3000)
+
+          setTimeout(() => {
+            clones[3].style.display = "block";
+            clones[4].style.display = "block";
+            moveBall(clones[4], lines.line112);
+            setTimeout(() => {
+              clones[4].style.display = "none";
+              let aux = document.getElementById("ir_valor");
+              let aux1 = p1 + " " + p2 + " " + p3 + " " + p4
+              aux.value = aux1;
+              
+            }, 1000)
+            
+          }, 2000)
+
+        }
+
+      } else if (currentStep === 2) {
+        if (tipo_sim == "monociclo") {
+          clones[3].style.display = "block";
+          clones[4].style.display = "block";
+          clones[3].style.width = "40px";
+          clones[4].style.width = "65px";
+
+          let soma_pc = (log[clock][0] + 1).toString(16);
+          while (soma_pc.length < 2) {
+            soma_pc = "0" + soma_pc;
+          }
+          if (tipo_dado == "dec") {
+            soma_pc = decimal(soma_pc)
+          }
+          clones[3].innerText = soma_pc;
+          let p1 = parseInt(log[clock][1].toString().substring(0, 5), 2).toString(16);
+          let p2 = parseInt(log[clock][1].toString().substring(5, 8), 2).toString(16);
+          console.log(log[clock][1].toString().substring(5, 8))
+          let p3 = complemento_8(log[clock][1].toString().substring(8, 16));
+          p3 = parseInt(p3, 2).toString(16);
+          let p4 = "";
+
+          while (p1.length < 2) {
+            p1 = "0" + p1;
+          }
+
+          while (p3.length < 2) {
+            p3 = "0" + p3;
+          }
+
+          if (p1 == "04" || p1 == "05" || p1 == "06" || p1 == "7") {
+            p3 = parseInt(log[clock][1].toString().substring(8, 11), 2).toString(16);
+            p4 = parseInt(log[clock][1].toString().substring(13, 16), 2).toString(16);
+          }
+
+          if (tipo_dado == "dec") {
+            p1 = decimal(p1)
+            p2 = decimal(p2)
+            p3 = decimal(p3)
+            p4 = decimal(p4)
+
+            if (Number.isNaN(p4)) {
+              p4 = ""
+            }
+          }
+          clones[4].innerText = p1 + " " + p2 + " " + p3 + " " + p4;
+
+          moveBall(clones[3], lines.line4);
+          moveBall(clones[4], lines.line16);
+
+          setTimeout(() => {
+            moveBall(clones[3], lines.line5);
+            moveBall(clones[4], lines.line25);
+          }, 1000);
+          setTimeout(() => {
+            moveBall(clones[3], lines.line6);
+          }, 2000);
+
+        } else if (tipo_sim == "multiciclo") {
+          clones[4].style.display = "flex";
+
+          moveBall(clones[4], lines.line106);
+          setTimeout(() => {
+            moveBall(clones[4], lines.line25);
+          }, 1000)
+
+          setTimeout(() => {
+            clones[5].style.display = "block";
+            clones[5].style.width = "40px";
+            let p1 = parseInt(log[clock][1].toString().substring(0, 5), 2).toString(16);
+            while (p1.length < 2) {
+              p1 = "0" + p1;
+            }
+
+            clones[5].innerText = p1;
+
+            moveBall(clones[5], lines.line26);
+            setTimeout(() => {
+              moveBall(clones[5], lines.line27);
+              setTimeout(() => {
+                moveBall(clones[5], lines.line28);
+              }, 1000);
+            }, 1000);
+
+            clones[6].style.display = "block";
+            let p3 = complemento_8(log[clock][1].toString().substring(8, 16));
+            p3 = parseInt(p3, 2).toString(16);
+
+            while (p3.length < 2) {
+              p3 = "0" + p3;
+            }
+            clones[6].innerText = p3;
+            clones[6].style.width = "40px";
+
+            moveBall(clones[6], lines.line40);
+
+            // registradores
+            clones[8].style.width = "20px";
+            clones[9].style.width = "20px";
+            clones[10].style.width = "20px";
+            clones[11].style.width = "20px";
+
+            let aux1 = parseInt(log[clock][1].substring(5, 8), 2).toString(16);
+            let aux2 = parseInt(log[clock][1].substring(8, 11), 2).toString(16);
+            let aux3 = parseInt(log[clock][1].substring(5, 8), 2).toString(16);
+            let aux4 = parseInt(log[clock][1].substring(13, 16), 2).toString(16);
+
+            if (tipo_dado == "dec") {
+              aux1 = decimal(aux1)
+              aux2 = decimal(aux2)
+              aux3 = decimal(aux3)
+              aux4 = decimal(aux4)
+            }
+
+            clones[8].style.display = "block";
+            clones[8].innerText = aux1;
+            clones[9].style.display = "block";
+            clones[9].innerText = aux2;
+            clones[10].style.display = "block";
+            clones[10].innerText = aux3;
+            clones[11].style.display = "block";
+            clones[11].innerText = aux4;
+            clones[12].style.display = "block";
+            clones[12].innerText = p3;
+
+            clones[12].style.width = "40px";
+
+            moveBall(clones[8], lines.line41);
+            moveBall(clones[9], lines.line42);
+            moveBall(clones[10], lines.line43);
+            moveBall(clones[11], lines.line44);
+            moveBall(clones[12], lines.line45);
+
+            setTimeout(() => {
+              moveBall(clones[6], lines.line105);
+              clones[7].innerText = p3;
+              clones[7].style.width = "40px";
+
+              moveBall(clones[8], lines.line22);
+              moveBall(clones[9], lines.line21);
+              moveBall(clones[10], lines.line20);
+              moveBall(clones[11], lines.line19);
+              moveBall(clones[12], lines.line18);
+
+              setTimeout(() => {
+                clones[6].style.display = "none";
+                document.getElementById("mar_valor").value = p3;
+              }, 1000)
+
+            }, 1000);
+
+            if (log[clock][1].substring(0, 5) == "01101") {
+              hlt = true;
+            }
+          }, 2000)
+
+          let teste_sinais = document.getElementById("tipo_sinais").value;
+
+          if (teste_sinais == "ativado" || teste_sinais == "teleporte") {
+            clones[21].style.display = "block";
+            clones[22].style.display = "block";
+            clones[23].style.display = "block";
+            clones[24].style.display = "block";
+            clones[25].style.display = "block";
+            clones[26].style.display = "block";
+            clones[27].style.display = "block";
+
+            clones[21].style.backgroundColor = "DodgerBlue";
+            clones[22].style.backgroundColor = "DodgerBlue";
+            clones[23].style.backgroundColor = "DodgerBlue";
+            clones[24].style.backgroundColor = "DodgerBlue";
+            clones[25].style.backgroundColor = "DodgerBlue";
+            clones[26].style.backgroundColor = "DodgerBlue";
+            clones[27].style.backgroundColor = "DodgerBlue";
+
+            clones[21].innerText = log[clock][5][0];
+            clones[21].style.width = "20px";
+
+            clones[22].innerHTML = log[clock][5][1];
+            clones[22].style.width = "20px";
+
+            clones[23].innerText = log[clock][5][2];
+            clones[23].style.width = "20px";
+
+            clones[24].innerText = log[clock][5][3];
+            clones[24].style.width = "20px";
+
+            clones[25].innerText = log[clock][5][4];
+            clones[25].style.width = "20px";
+
+            let aux = log[clock][5][5].toString();
+            while (aux.length < 2) {
+              aux = "0" + aux;
+            };
+            clones[26].innerText = aux;
+            clones[26].style.width = "30px";
+
+            aux = log[clock][5][5].toString();
+            while (aux.length < 3) {
+              aux = "0" + aux;
+            }
+            clones[27].innerText = aux;
+            clones[27].style.width = "40px";
+
+            moveBall(clones[21], lines.line48);
+            setTimeout(() => {
+              moveBall(clones[21], lines.line49);
+              setTimeout(() => {
+                if (log[clock][5][0] == 0) {
+                  document.getElementById("line68").style.strokeWidth = 2;
+                  document.getElementById("line69").style.strokeWidth = 0;
+                } else if (log[clock][5][0] == 1) {
+                  document.getElementById("line69").style.strokeWidth = 2;
+                  document.getElementById("line68").style.strokeWidth = 0;
+                } 
+              }, 1000);
+            }, 1000);
+
+            moveBall(clones[22], lines.line50);
+            setTimeout(() => {
+              moveBall(clones[22], lines.line51);
+            }, 1000);
+
+            moveBall(clones[23], lines.line52);
+            setTimeout(() => {
+              moveBall(clones[23], lines.line53);
+            }, 1000);
+
+            moveBall(clones[24], lines.line54);
+            setTimeout(() => {
+              moveBall(clones[24], lines.line55);
+              setTimeout(() => {
+                moveBall(clones[24], lines.line56);
+                setTimeout(() => {
+                  moveBall(clones[24], lines.line57);
+                  setTimeout(() => {
+                    if (log[clock][5][3] == 0) {
+                      document.getElementById("line71").style.strokeWidth = 0;
+                      document.getElementById("line70").style.strokeWidth = 2;
+                    } else if (log[clock][5][3] == 1) {
+                      document.getElementById("line70").style.strokeWidth = 0;
+                      document.getElementById("line71").style.strokeWidth = 2;
+                    } 
+                  }, 1000);
+                }, 1000);
+              }, 1000);
+            }, 1000);
+
+            moveBall(clones[25], lines.line58);
+            setTimeout(() => {
+              moveBall(clones[25], lines.line59);
+            }, 1000);
+
+            moveBall(clones[26], lines.line60);
+            setTimeout(() => {
+              moveBall(clones[26], lines.line61);
+              setTimeout(() => {
+                moveBall(clones[26], lines.line62);
+                setTimeout(() => {
+                  moveBall(clones[26], lines.line63);
+                  setTimeout(() => {
+                    if (log[clock][5][5] == "00") {
+                      document.getElementById("line72").style.strokeWidth = 2;
+                      document.getElementById("line73").style.strokeWidth = 0;
+                      document.getElementById("line74").style.strokeWidth = 0;
+                    } else if (log[clock][5][5] == "01") {
+                      document.getElementById("line73").style.strokeWidth = 2;
+                      document.getElementById("line72").style.strokeWidth = 0;
+                      document.getElementById("line74").style.strokeWidth = 0;
+                    } else if (log[clock][5][5] == "10") {
+                      document.getElementById("line74").style.strokeWidth = 2;
+                      document.getElementById("line72").style.strokeWidth = 0;
+                      document.getElementById("line73").style.strokeWidth = 0;
+                    }
+                  }, 1000);
+                }, 1000);
+              }, 1000);
+            }, 1000);
+
+            moveBall(clones[27], lines.line64);
+            setTimeout(() => {
+              moveBall(clones[27], lines.line65);
+            }, 1000);
+          }
+        }
+          
+
+      } else if (currentStep === 3) {
+        
+        if (tipo_sim == "monociclo") {
+          clones[5].style.display = "block";
+          clones[5].style.width = "40px";
+          let p1 = parseInt(log[clock][1].toString().substring(0, 5), 2).toString(16);
+          while (p1.length < 2) {
+            p1 = "0" + p1;
+          }
+
+          if (tipo_dado == "dec") {
+            p1 = decimal(p1)
+          }
+          clones[5].innerText = p1;
+
+          moveBall(clones[5], lines.line26);
+          setTimeout(() => {
+            moveBall(clones[5], lines.line27);
+            setTimeout(() => {
+              moveBall(clones[5], lines.line28);
+            }, 1000);
+          }, 1000);
+
+          clones[6].style.display = "block";
+          let p3 = complemento_8(log[clock][1].toString().substring(8, 16));
+          p3 = parseInt(p3, 2).toString(16);
+
+          while (p3.length < 2) {
+            p3 = "0" + p3;
+          }
+
+          if (tipo_dado == "dec") {
+            p3 = decimal(p3)
+          }
+          clones[6].innerText = p3;
+          clones[6].style.width = "40px";
+
+          moveBall(clones[6], lines.line40);
+
+          // registradores
+          clones[8].style.width = "20px";
+          clones[9].style.width = "20px";
+          clones[10].style.width = "20px";
+          clones[11].style.width = "20px";
+
+          let aux1 = parseInt(log[clock][1].substring(5, 8), 2).toString(16);
+          let aux2 = parseInt(log[clock][1].substring(8, 11), 2).toString(16);
+          let aux3 = parseInt(log[clock][1].substring(5, 8), 2).toString(16);
+          let aux4 = parseInt(log[clock][1].substring(13, 16), 2).toString(16);
+
+          if (tipo_dado == "dec") {
+            aux1 = decimal(aux1)
+            aux2 = decimal(aux2)
+            aux3 = decimal(aux3)
+            aux4 = decimal(aux4)
+          }
+
+          clones[8].style.display = "block";
+          clones[8].innerText = aux1;
+          clones[9].style.display = "block";
+          clones[9].innerText = aux2;
+          clones[10].style.display = "block";
+          clones[10].innerText = aux3;
+          clones[11].style.display = "block";
+          clones[11].innerText = aux4;
+          clones[12].style.display = "block";
+          clones[12].innerText = p3;
+
+          clones[12].style.width = "40px";
+
+          moveBall(clones[8], lines.line41);
+          moveBall(clones[9], lines.line42);
+          moveBall(clones[10], lines.line43);
+          moveBall(clones[11], lines.line44);
+          moveBall(clones[12], lines.line45);
+
+          setTimeout(() => {
+            moveBall(clones[6], lines.line15);
+            clones[7].innerText = p3;
+            clones[7].style.width = "40px";
+
+            moveBall(clones[8], lines.line22);
+            moveBall(clones[9], lines.line21);
+            moveBall(clones[10], lines.line20);
+            moveBall(clones[11], lines.line19);
+            moveBall(clones[12], lines.line18);
+
+            setTimeout(() => {
+              clones[7].style.display = "block";
+              moveBall(clones[6], lines.line1);
+              moveBall(clones[7], lines.line13);
+              setTimeout(() => {
+                moveBall(clones[6], lines.line2);
+                moveBall(clones[7], lines.line14);
+                setTimeout(() => {
+                  moveBall(clones[6], lines.line3);
+                }, 1000);
+              }, 1000);
+            }, 1000);
+          }, 1000);
+
+          if (log[clock][1].substring(0, 5) == "01101") {
+            hlt = true;
+          }
+
+        } else if (tipo_sim == "multiciclo") { // clock 3
+          if (log[clock][1].substring(0, 5) == "00001") { // LDA
+
+            clones[6].style.display = "block";
+            let p3 = complemento_8(log[clock][1].toString().substring(8, 16));
+            p3 = parseInt(p3, 2).toString(16);
+
+            while (p3.length < 2) {
+              p3 = "0" + p3;
+            }
+
+            if (tipo_dado == "dec") {
+              p3 = decimal(p3)
+            }
+            clones[6].innerText = p3;
+            clones[6].style.width = "40px";
+
+            moveBall(clones[6], lines.line111);
+
+            clones[7].innerText = p3;
+            clones[7].style.width = "40px";
+
+            setTimeout(() => {
+              clones[7].style.display = "block";
+              moveBall(clones[6], lines.line1);
+              moveBall(clones[7], lines.line13);
+              setTimeout(() => {
+                moveBall(clones[6], lines.line2);
+                moveBall(clones[7], lines.line14);
+                setTimeout(() => {
+                  moveBall(clones[6], lines.line3);
+                }, 1000);
+              }, 1000);
+            }, 1000);
+
+            setTimeout(() => {
+              clones[19].style.display = "block";
+              let aux = parseInt(complemento(log[clock][2][parseInt(log[clock][1].substring(8, 16), 2)]), 2).toString(16);
+              while (aux.length < 4) {
+                aux = "0" + aux;
+              }
+
+              if (tipo_dado == "dec") {
+                aux = decimal(aux)
+              }
+              clones[19].innerText = aux;
+              moveBall(clones[19], lines.line107);
+              setTimeout(() => {
+                clones[19].style.display = "none";
+                document.getElementById("mdr_valor").value = aux;
+              }, 1000)
+            }, 3000)
+
+          } else if (log[clock][1].substring(0, 5) == "00010") { // LDAi
+
+            if (log[clock + 1][5][3] === 0) {
+              let aux1 = parseInt(log[clock][1].substring(5, 8), 2).toString(16)
+              if (tipo_dado == "dec") {
+                aux1 = decimal(aux1)
+              }
+              clones[14].innerText = aux1;
+            } else {
+              let aux2 = parseInt(log[clock][1].substring(13, 16), 2).toString(16)
+              if (tipo_dado == "dec") {
+                aux2 = decimal(aux2)
+              }
+              clones[14].innerText = aux2;
+            }
+
+            clones[14].style.display = "block";
+            clones[14].style.width = "20px";
+            moveBall(clones[14], lines.line23);
+
+            clones[20].style.display = "block";
+            clones[20].style.width = "60px"
+            let aux3 = parseInt(complemento(log[clock][1].substring(8, 16)), 2).toString(16);
+            while (aux3.length < 2) {
+              aux3 = "0" + aux3;
+            }
+
+            if (tipo_dado == "dec") {
+              aux3 = decimal(aux3)
+            }
+            clones[20].innerText = aux3;
+            moveBall(clones[20], lines.line24);
+
+            setTimeout(() => {
+              let reg_muda = document.getElementById("reg" + parseInt(log[clock][1].substring(5, 8), 2));
+              let hex = parseInt(complemento(log[clock][1].substring(8, 16)), 2).toString(16);
+              while (hex.length < 4) {
+                hex = "0" + hex;
+              }
+
+              if (tipo_dado == "dec") {
+                hex = decimal(hex)
+              }
+              reg_muda.value = hex;
+            }, 1000);
+
+          } else if (log[clock][1].substring(0, 5) == "00011") { // STA
+
+            clones[15].style.display = "block";
+            clones[17].style.display = "block";
+            clones[15].style.width = "60px";
+            clones[17].style.width = "60px";
+
+            let gpr_saida_a = log[clock][3][parseInt(log[clock][1].substring(5, 8), 2)].toString();
+            let gpr_saida_b = log[clock][3][parseInt(log[clock][1].substring(8, 11), 2)].toString();
+
+            while (gpr_saida_a.length < 4) {
+              gpr_saida_a = "0" + gpr_saida_a;
+            }
+            while (gpr_saida_b.length < 4) {
+              gpr_saida_b = "0" + gpr_saida_b;
+            }
+
+            let aux1 = parseInt(complemento(gpr_saida_a), 2).toString(16);
+            let aux2 = parseInt(complemento(gpr_saida_b), 2).toString(16);
+
+            while (aux1.length < 4) {
+              aux1 = "0" + aux1;
+            }
+
+            while (aux2.length < 4) {
+              aux2 = "0" + aux2;
+            }
+
+            if (tipo_dado == "dec") {
+              aux1 = decimal(aux1)
+              aux2 = decimal(aux2)
+            }
+
+            clones[15].innerText = aux1;
+            clones[17].innerText = aux2;
+
+            moveBall(clones[15], lines.line108);
+            moveBall(clones[17], lines.line109);
+
+            setTimeout(() => {
+              clones[15].style.display = "none";
+              clones[17].style.display = "none";
+
+              document.getElementById("a_valor").value = aux1;
+              document.getElementById("b_valor").value = aux2;
+            }, 1000)
+
+          } else if (log[clock][1].substring(0, 5) == "00100") { // ADD
+            clones[15].style.display = "block";
+            clones[17].style.display = "block";
+            clones[15].style.width = "60px";
+            clones[17].style.width = "60px";
+
+            let gpr_saida_a = log[clock][3][parseInt(log[clock][1].substring(5, 8), 2)].toString();
+            let gpr_saida_b = log[clock][3][parseInt(log[clock][1].substring(8, 11), 2)].toString();
+
+            while (gpr_saida_a.length < 4) {
+              gpr_saida_a = "0" + gpr_saida_a;
+            }
+            while (gpr_saida_b.length < 4) {
+              gpr_saida_b = "0" + gpr_saida_b;
+            }
+
+            let aux1 = parseInt(complemento(gpr_saida_a), 2).toString(16);
+            let aux2 = parseInt(complemento(gpr_saida_b), 2).toString(16);
+
+            while (aux1.length < 4) {
+              aux1 = "0" + aux1;
+            }
+
+            while (aux2.length < 4) {
+              aux2 = "0" + aux2;
+            }
+
+            if (tipo_dado == "dec") {
+              aux1 = decimal(aux1)
+              aux2 = decimal(aux2)
+            }
+
+            clones[15].innerText = aux1;
+            clones[17].innerText = aux2;
+
+            moveBall(clones[15], lines.line108);
+            moveBall(clones[17], lines.line109);
+
+            setTimeout(() => {
+              clones[15].style.display = "none";
+              clones[17].style.display = "none";
+              document.getElementById("a_valor").value = aux1;
+              document.getElementById("b_valor").value = aux2;
+            }, 1000)
+
+          } else if (log[clock][1].substring(0, 5) == "01001" || log[clock][1].substring(0, 5) == "01011" || log[clock][1].substring(0, 5) == "01100") { // JMP, JZ, JN
+            clones[6].style.display = "block";
+            let p3 = complemento_8(log[clock][1].toString().substring(8, 16));
+            p3 = parseInt(p3, 2).toString(16);
+
+            while (p3.length < 2) {
+              p3 = "0" + p3;
+            }
+
+            if (tipo_dado == "dec") {
+              p3 = decimal(p3)
+            }
+
+            clones[6].innerText = p3;
+            clones[6].style.width = "40px";
+
+            moveBall(clones[6], lines.line111);
+
+            clones[7].innerText = p3;
+            clones[7].style.width = "40px";
+
+            setTimeout(() => {
+              clones[7].style.display = "block";
+              moveBall(clones[6], lines.line1);
+              moveBall(clones[7], lines.line13);
+              setTimeout(() => {
+                moveBall(clones[6], lines.line2);
+                moveBall(clones[7], lines.line14);
+                setTimeout(() => {
+                  moveBall(clones[6], lines.line3);
+                }, 1000);
+              }, 1000);
+            }, 1000);
+
+            setTimeout(() => {
+              clones[13].style.width = "40px";
+              let novo_pc;
+              if (log[clock + 1][5][0] === 0) {
+                let p3 = complemento_8(log[clock][1].toString().substring(8, 16));
+                p3 = parseInt(p3, 2).toString(16);
+
+                while (p3.length < 2) {
+                  p3 = "0" + p3;
+                }
+                
+                novo_pc = p3;
+
+                if (tipo_dado == "dec") {
+                  novo_pc = decimal(novo_pc)
+                }
+                clones[13].innerText = novo_pc;
+
+              } else {
+                novo_pc = parseInt(log[clock + 1][0].toString(2), 2).toString(16);
+                while (novo_pc.length < 2) {
+                  novo_pc = "0" + novo_pc;
+                }
+
+                if (tipo_dado == "dec") {
+                  novo_pc = decimal(novo_pc)
+                }
+                clones[13].innerText = novo_pc;
+              }
+
+              clones[13].style.display = "block";
+              moveBall(clones[13], lines.line7);
+              setTimeout(() => {
+                document.getElementById("pc_valor").value = novo_pc;
+                clones[13].style.display = "none"
+              }, 1000)
+              
+            }, 4000)
+
+          }
+
+        }
+
+      } else if (currentStep === 4) {
+
+        if (tipo_sim == "monociclo") {
+          clones[13].style.width = "40px";
+          let novo_pc;
+          if (log[clock + 1][5][0] === 0) {
+            let p3 = complemento_8(log[clock][1].toString().substring(8, 16));
+            p3 = parseInt(p3, 2).toString(16);
+
+            while (p3.length < 2) {
+              p3 = "0" + p3;
+            }
+            
+            novo_pc = p3;
+
+            if (tipo_dado == "dec") {
+              novo_pc = decimal(novo_pc)
+            }
+            clones[13].innerText = novo_pc;
+
+          } else {
+            novo_pc = parseInt(log[clock + 1][0].toString(2), 2).toString(16);
+            while (novo_pc.length < 2) {
+              novo_pc = "0" + novo_pc;
+            }
+
+            if (tipo_dado == "dec") {
+              novo_pc = decimal(novo_pc)
+            }
+            clones[13].innerText = novo_pc;
+          }
+          setTimeout(() => {
+            clones[13].style.display = "block";
+            moveBall(clones[13], lines.line7);
+            setTimeout(() => {
+              document.getElementById("pc_valor").value = novo_pc;
+              clones[13].style.display = "none"
+            }, 1000)
+          }, 2000);
+
+          if (log[clock + 1][5][3] === 0) {
+            let aux = parseInt(log[clock][1].substring(5, 8), 2).toString(16)
+            if (tipo_dado == "dec") {
+              aux = decimal(aux)
+            }
+            clones[14].innerText = aux;
+          } else {
+            let aux = parseInt(log[clock][1].substring(13, 16), 2).toString(16)
+            if (tipo_dado == "dec") {
+              aux = decimal(aux)
+            }
+            clones[14].innerText = aux;
+          }
+
+          setTimeout(() => {
+            clones[14].style.display = "block";
+            clones[14].style.width = "20px";
+            moveBall(clones[14], lines.line23);
+          }, 4000);
+
+          if (log[clock + 1][5][1] == 1) {
+            clones[19].style.display = "block";
+            let aux = parseInt(complemento(log[clock][2][parseInt(log[clock][1].substring(8, 16), 2)]), 2).toString(16);
+            while (aux.length < 4) {
+              aux = "0" + aux;
+            }
+
+            if (tipo_dado == "dec") {
+              aux = decimal(aux)
+            }
+            clones[19].innerText = aux;
+            moveBall(clones[19], lines.line17);
+          }
+
+          if (log[clock + 1][5][5] == "00") {
+            let aux = parseInt(complemento(log[clock][1].substring(8, 16)), 2).toString(16);
+            while (aux.length < 4) {
+              aux = "0" + aux;
+            }
+
+            if (tipo_dado == "dec") {
+              aux = decimal(aux)
+            }
+            clones[20].innerText = aux;
+
+            setTimeout(() => {
+              clones[20].style.display = "block";
+              moveBall(clones[20], lines.line24);
+            }, 4000);
+          }
+
+          if (log[clock][1].substring(0, 5) == "00010") {
+            setTimeout(() => { // Atualiza Reg comando LDAI
+              let reg_muda = document.getElementById("reg" + parseInt(log[clock - 1][1].substring(5, 8), 2));
+              let novo_valor = log[clock - 1][1].substring(8, 16);
+              while (novo_valor.length < 16) {
+                novo_valor = "0" + novo_valor;
+              }
+
+              let aux = parseInt(complemento(novo_valor), 2).toString(16);
+              while (aux.length < 4) {
+                aux = "0" + aux;
+              }
+
+              console.log(aux)
+
+              if (tipo_dado == "dec") {
+                aux = decimal(aux)
+              }
+              reg_muda.value = aux;
+            }, 1000);
+          }
+
+          let teste_sinais = document.getElementById("tipo_sinais").value;
+
+          if (teste_sinais == "ativado" || teste_sinais == "teleporte") {
+            clones[21].style.display = "block";
+            clones[22].style.display = "block";
+            clones[23].style.display = "block";
+            clones[24].style.display = "block";
+            clones[25].style.display = "block";
+            clones[26].style.display = "block";
+            clones[27].style.display = "block";
+
+            clones[21].style.backgroundColor = "DodgerBlue";
+            clones[22].style.backgroundColor = "DodgerBlue";
+            clones[23].style.backgroundColor = "DodgerBlue";
+            clones[24].style.backgroundColor = "DodgerBlue";
+            clones[25].style.backgroundColor = "DodgerBlue";
+            clones[26].style.backgroundColor = "DodgerBlue";
+            clones[27].style.backgroundColor = "DodgerBlue";
+
+            clones[21].innerText = log[clock][5][0];
+            clones[21].style.width = "20px";
+
+            clones[22].innerHTML = log[clock][5][1];
+            clones[22].style.width = "20px";
+
+            clones[23].innerText = log[clock][5][2];
+            clones[23].style.width = "20px";
+
+            clones[24].innerText = log[clock][5][3];
+            clones[24].style.width = "20px";
+
+            clones[25].innerText = log[clock][5][4];
+            clones[25].style.width = "20px";
+
+            let aux = log[clock][5][5].toString();
+            while (aux.length < 2) {
+              aux = "0" + aux;
+            };
+            clones[26].innerText = aux;
+            clones[26].style.width = "30px";
+
+            aux = log[clock][5][5].toString();
+            while (aux.length < 3) {
+              aux = "0" + aux;
+            }
+            clones[27].innerText = aux;
+            clones[27].style.width = "40px";
+
+            moveBall(clones[21], lines.line48);
+            setTimeout(() => {
+              moveBall(clones[21], lines.line49);
+              setTimeout(() => {
+                if (log[clock][5][0] == 0) {
+                  document.getElementById("line68").style.strokeWidth = 2;
+                  document.getElementById("line69").style.strokeWidth = 0;
+                } else if (log[clock][5][0] == 1) {
+                  document.getElementById("line69").style.strokeWidth = 2;
+                  document.getElementById("line68").style.strokeWidth = 0;
+                } 
+              }, 1000);
+            }, 1000);
+
+            moveBall(clones[22], lines.line50);
+            setTimeout(() => {
+              moveBall(clones[22], lines.line51);
+            }, 1000);
+
+            moveBall(clones[23], lines.line52);
+            setTimeout(() => {
+              moveBall(clones[23], lines.line53);
+            }, 1000);
+
+            moveBall(clones[24], lines.line54);
+            setTimeout(() => {
+              moveBall(clones[24], lines.line55);
+              setTimeout(() => {
+                moveBall(clones[24], lines.line56);
+                setTimeout(() => {
+                  moveBall(clones[24], lines.line57);
+                  setTimeout(() => {
+                    if (log[clock][5][3] == 0) {
+                      document.getElementById("line71").style.strokeWidth = 0;
+                      document.getElementById("line70").style.strokeWidth = 2;
+                    } else if (log[clock][5][3] == 1) {
+                      document.getElementById("line70").style.strokeWidth = 0;
+                      document.getElementById("line71").style.strokeWidth = 2;
+                    } 
+                  }, 1000);
+                }, 1000);
+              }, 1000);
+            }, 1000);
+
+            moveBall(clones[25], lines.line58);
+            setTimeout(() => {
+              moveBall(clones[25], lines.line59);
+            }, 1000);
+
+            moveBall(clones[26], lines.line60);
+            setTimeout(() => {
+              moveBall(clones[26], lines.line61);
+              setTimeout(() => {
+                moveBall(clones[26], lines.line62);
+                setTimeout(() => {
+                  moveBall(clones[26], lines.line63);
+                  setTimeout(() => {
+                    if (log[clock][5][5] == "00") {
+                      document.getElementById("line72").style.strokeWidth = 2;
+                      document.getElementById("line73").style.strokeWidth = 0;
+                      document.getElementById("line74").style.strokeWidth = 0;
+                    } else if (log[clock][5][5] == "01") {
+                      document.getElementById("line73").style.strokeWidth = 2;
+                      document.getElementById("line72").style.strokeWidth = 0;
+                      document.getElementById("line74").style.strokeWidth = 0;
+                    } else if (log[clock][5][5] == "10") {
+                      document.getElementById("line74").style.strokeWidth = 2;
+                      document.getElementById("line72").style.strokeWidth = 0;
+                      document.getElementById("line73").style.strokeWidth = 0;
+                    }
+                  }, 1000);
+                }, 1000);
+              }, 1000);
+            }, 1000);
+
+            moveBall(clones[27], lines.line64);
+            setTimeout(() => {
+              moveBall(clones[27], lines.line65);
+            }, 1000);
+          }
+        } else if (tipo_sim == "multiciclo") { // multiclo clock 4
+
+          if (log[clock][1].substring(0, 5) == "00001") { // LDA
+            clones[19].style.display = "block";
+            moveBall(clones[19], line113);
+
+            setTimeout(() => {
+              if (log[clock + 1][5][3] === 0) {
+                let aux = parseInt(log[clock][1].substring(5, 8), 2).toString(16)
+                if (tipo_dado == "dec") {
+                  aux = decimal(aux)
+                }
+                clones[14].innerText = aux;
+              } else {
+                let aux = parseInt(log[clock][1].substring(13, 16), 2).toString(16)
+                if (tipo_dado == "dec") {
+                  aux = decimal(aux)
+                }
+                clones[14].innerText = aux;
+              }
+
+              clones[14].style.display = "block";
+              clones[14].style.width = "20px";
+              moveBall(clones[14], lines.line23);
+
+              clones[20].style.display = "block";
+              clones[20].style.width = "60px"
+              let aux3 = parseInt(complemento(log[clock][2][parseInt(log[clock][1].substring(8, 16), 2)]), 2).toString(16);
+              while (aux3.length < 4) {
+                aux3 = "0" + aux3;
+              }
+
+              if (tipo_dado == "dec") {
+                aux3 = decimal(aux3)
+              }
+              clones[20].innerText = aux3;
+              moveBall(clones[20], lines.line24);
+            }, 1000);
+
+            setTimeout(() => {
+              let reg_muda = document.getElementById("reg" + parseInt(log[clock][1].substring(5, 8), 2));
+              let hex = complemento(log[clock][2][parseInt(log[clock][1].substring(8, 16), 2)]);
+              hex = parseInt(hex, 2);
+              hex = hex.toString(16);
+              while (hex.length < 4) {
+                hex = "0" + hex;
+              }
+
+              if (tipo_dado == "dec") {
+                hex = decimal(hex)
+              }
+              reg_muda.value = hex;
+            }, 2000);
+          
+          } else if (log[clock][1].substring(0, 5) == "00011") { // STA 4
+
+            clones[15].style.display = "block";
+            clones[15].style.width = "60px";
+
+            let gpr_saida_a = log[clock][3][parseInt(log[clock][1].substring(5, 8), 2)].toString();
+
+            while (gpr_saida_a.length < 4) {
+              gpr_saida_a = "0" + gpr_saida_a;
+            }
+
+            let aux1 = parseInt(complemento(gpr_saida_a), 2).toString(16);
+
+            while (aux1.length < 4) {
+              aux1 = "0" + aux1;
+            }
+
+            if (tipo_dado == "dec") {
+              aux1 = decimal(aux1)
+            }
+            clones[15].innerText = aux1;
+
+            clones[16].style.display = "block";
+            clones[16].style.width = "60px";
+            clones[16].innerText = aux1;
+            moveBall(clones[16], lines.line47);
+            moveBall(clones[15], lines.line31);
+
+            setTimeout(() => {
+              moveBall(clones[15], lines.line32);
+              setTimeout(() => {
+                moveBall(clones[15], lines.line33);
+                setTimeout(() => {
+                  moveBall(clones[15], lines.line34);
+                }, 1000)
+              }, 1000);
+            }, 1000);
+
+            setTimeout(() => { // Atualiza Mem comando STA
+              let reg_muda = document.getElementById("m_dad" + parseInt(log[clock][1].substring(8, 16), 2));
+              let completo = log[clock][3][parseInt(log[clock][1].substring(5, 8), 2)].toString();
+
+              completo = parseInt(complemento(completo)).toString(16);
+              while (completo.length < 4) {
+                completo = "0" + completo;
+              }
+
+              if (tipo_dado == "dec") {
+                completo = decimal(completo)
+              }
+              reg_muda.value = completo;
+            }, 4000);
+
+            clones[6].style.display = "block";
+            let p3 = complemento_8(log[clock][1].toString().substring(8, 16));
+            p3 = parseInt(p3, 2).toString(16);
+
+            while (p3.length < 2) {
+              p3 = "0" + p3;
+            }
+
+            if (tipo_dado == "dec") {
+              p3 = decimal(p3)
+            }
+            clones[6].innerText = p3;
+            clones[6].style.width = "40px";
+
+            moveBall(clones[6], lines.line111);
+
+            clones[7].innerText = p3;
+            clones[7].style.width = "40px";
+
+            setTimeout(() => {
+              clones[7].style.display = "block";
+              moveBall(clones[6], lines.line1);
+              moveBall(clones[7], lines.line13);
+              setTimeout(() => {
+                moveBall(clones[6], lines.line2);
+                moveBall(clones[7], lines.line14);
+                setTimeout(() => {
+                  moveBall(clones[6], lines.line3);
+                }, 1000);
+              }, 1000);
+            }, 1000);
+
+          } else if (log[clock][1].substring(0, 5) == "00100") { // ADD
+            clones[15].style.display = "block";
+            clones[17].style.display = "block";
+            clones[15].style.width = "60px";
+            clones[17].style.width = "60px";
+
+            let gpr_saida_a = log[clock][3][parseInt(log[clock][1].substring(5, 8), 2)].toString();
+            let gpr_saida_b = log[clock][3][parseInt(log[clock][1].substring(8, 11), 2)].toString();
+
+            while (gpr_saida_a.length < 4) {
+              gpr_saida_a = "0" + gpr_saida_a;
+            }
+            while (gpr_saida_b.length < 4) {
+              gpr_saida_b = "0" + gpr_saida_b;
+            }
+
+            let aux1 = parseInt(complemento(gpr_saida_a), 2).toString(16);
+            let aux2 = parseInt(complemento(gpr_saida_b), 2).toString(16);
+
+            while (aux1.length < 4) {
+              aux1 = "0" + aux1;
+            }
+
+            while (aux2.length < 4) {
+              aux2 = "0" + aux2;
+            }
+
+            if (tipo_dado == "dec") {
+              aux1 = decimal(aux1)
+              aux2 = decimal(aux2)
+            }
+            clones[15].innerText = aux1;
+            clones[17].innerText = aux2;
+
+            moveBall(clones[15], lines.line114);
+            moveBall(clones[17], lines.line115);
+            setTimeout(() => {
+              clones[16].style.display = "block";
+              clones[16].style.width = "60px";
+              clones[16].innerText = aux1;
+              moveBall(clones[16], lines.line47);
+              moveBall(clones[15], lines.line31);
+
+              setTimeout(() => {
+                moveBall(clones[15], lines.line32);
+                setTimeout(() => {
+                  moveBall(clones[15], lines.line33);
+                  setTimeout(() => {
+                    moveBall(clones[15], lines.line34);
+                  }, 1000)
+                }, 1000);
+              }, 1000);
+            }, 1000);
+
+            setTimeout(() => {
+              // zero, carry, negativo
+              if (log[clock][4][0] == 1) {
+                document.getElementById("zero").style.backgroundColor = "RED";
+              }
+
+              if (log[clock][4][1] == 1) {
+                document.getElementById("carry").style.backgroundColor = "RED";
+              }
+
+              if (log[clock][4][2] == 1) {
+                document.getElementById("negativo").style.backgroundColor = "RED";
+              }
+
+              if (log[clock][1].substring(0, 5) == "00100") { // ADD
+                document.getElementById("imagem").src = "img/adicao.png";
+              } else if (log[clock][1].substring(0, 5) == "00101") { // SUB
+                document.getElementById("imagem").src = "img/subtracao.png";
+              } else if (log[clock][1].substring(0, 5) == "00110") { // AND
+                document.getElementById("imagem").src = "img/and.png";
+              } else if (log[clock][1].substring(0, 5) == "00111") { // OR
+                document.getElementById("imagem").src = "img/or.png";
+              } else if (log[clock][1].substring(0, 5) == "01000") { // NOT
+                document.getElementById("imagem").src = "img/not.png";
+              }
+
+              clones[18].style.display = "block";
+              clones[18].style.width = "60px";
+              let ula_saida;
+              if (log[clock + 1][5][3] == 0) {
+                ula_saida = log[clock + 1][3][parseInt(log[clock][1].substring(5, 8), 2)].toString();
+              } else {
+                ula_saida = log[clock + 1][3][parseInt(log[clock][1].substring(13, 16), 2)].toString();
+              }
+
+              while (ula_saida.length < 16) {
+                ula_saida = "0" + ula_saida;
+              }
+
+              let aux = parseInt(complemento(ula_saida), 2).toString(16);
+              while (aux.length < 4) {
+                aux = "0" + aux;
+              }
+
+              if (tipo_dado == "dec") {
+                aux = decimal(aux)
+              }
+              clones[18].innerText = aux;
+
+              moveBall(clones[18], lines.line35);
+              setTimeout(() => {
+                moveBall(clones[18], lines.line36);
+                setTimeout(() => {
+                  moveBall(clones[18], lines.line110);
+                  setTimeout(() => {
+                    clones[18].style.display = "none";
+                    document.getElementById("r_valor").value = aux;
+                  }, 1000)
+                }, 1000);
+              }, 1000);
+            }, 2000)
+          }
+
+        }
+
+      } else if (currentStep === 5) {
+        if (tipo_sim == "monociclo") {
+          clones[15].style.display = "block";
+          clones[17].style.display = "block";
+          clones[15].style.width = "60px";
+          clones[17].style.width = "60px";
+
+          let gpr_saida_a = log[clock][3][parseInt(log[clock][1].substring(5, 8), 2)].toString();
+          let gpr_saida_b = log[clock][3][parseInt(log[clock][1].substring(8, 11), 2)].toString();
+
+          while (gpr_saida_a.length < 4) {
+            gpr_saida_a = "0" + gpr_saida_a;
+          }
+          while (gpr_saida_b.length < 4) {
+            gpr_saida_b = "0" + gpr_saida_b;
+          }
+
+          let aux1 = parseInt(complemento(gpr_saida_a), 2).toString(16);
+          let aux2 = parseInt(complemento(gpr_saida_b), 2).toString(16);
+
+          while (aux1.length < 4) {
+            aux1 = "0" + aux1;
+          }
+
+          while (aux2.length < 4) {
+            aux2 = "0" + aux2;
+          }
+
+          if (tipo_dado == "dec") {
+            aux1 = decimal(aux1)
+            aux2 = decimal(aux2)
+          }
+          clones[15].innerText = aux1;
+          clones[17].innerText = aux2;
+
+          moveBall(clones[15], lines.line46);
+          moveBall(clones[17], lines.line30);
+          setTimeout(() => {
+            clones[16].style.display = "block";
+            clones[16].style.width = "60px";
+            clones[16].innerText = aux1;
+            moveBall(clones[16], lines.line47);
+            moveBall(clones[15], lines.line31);
+
+            setTimeout(() => {
+              moveBall(clones[15], lines.line32);
+              setTimeout(() => {
+                moveBall(clones[15], lines.line33);
+                setTimeout(() => {
+                  moveBall(clones[15], lines.line34);
+                }, 1000)
+              }, 1000);
+            }, 1000);
+          }, 1000);
+
+          if (log[clock + 1][5][5] == "01") {
+            clones[20].style.display = "block";
+            clones[20].style.width = "60px"
+            let aux3 = parseInt(complemento(log[clock][2][parseInt(log[clock][1].substring(8, 16), 2)]), 2).toString(16);
+            while (aux3.length < 4) {
+              aux3 = "0" + aux3;
+            }
+
+            if (tipo_dado == "dec") {
+              aux3 = decimal(aux3)
+            }
+            clones[20].innerText = aux3;
+            moveBall(clones[20], lines.line24);
+          }
+
+          if (log[clock][1].substring(0, 5) == "00011") {
+            setTimeout(() => { // Atualiza Mem comando STA
+              let reg_muda = document.getElementById("m_dad" + parseInt(log[clock - 1][1].substring(8, 16), 2));
+              let completo = log[clock][3][parseInt(log[clock - 1][1].substring(5, 8), 2)].toString();
+              while (completo.length < 16) {
+                completo = "0" + completo;
+              }
+
+              let aux = complemento(completo)
+
+              aux = parseInt(aux, 2).toString(16)
+
+              if (tipo_dado == "dec") {
+                aux = decimal(aux)
+              }
+              reg_muda.value = aux;
+            }, 5000);
+          }
+
+          if (log[clock][1].substring(0, 5) == "00001") {
+            
+            setTimeout(() => { // Atualiza Reg comando LDA
+              let reg_muda = document.getElementById("reg" + parseInt(log[clock - 1][1].substring(5, 8), 2));
+              let aux = complemento(log[clock - 1][2][parseInt(log[clock - 1][1].substring(8, 16), 2)])
+
+              aux = parseInt(aux, 2).toString(16)
+
+              if (tipo_dado == "dec") {
+                aux = decimal(aux)
+              }
+
+              reg_muda.value = aux;
+            }, 1000);
+          }
+        } else if (tipo_sim == "multiciclo") { // clock 5
+          clones[18].style.display = "block";
+          clones[18].style.width = "60px";
+          let ula_saida;
+          if (log[clock + 1][5][3] == 0) {
+            ula_saida = log[clock + 1][3][parseInt(log[clock][1].substring(5, 8), 2)].toString();
+          } else {
+            ula_saida = log[clock + 1][3][parseInt(log[clock][1].substring(13, 16), 2)].toString();
+          }
+
+          while (ula_saida.length < 16) {
+            ula_saida = "0" + ula_saida;
+          }
+
+          let aux = parseInt(complemento(ula_saida), 2).toString(16);
+          while (aux.length < 4) {
+            aux = "0" + aux;
+          }
+
+          if (tipo_dado == "dec") {
+            aux = decimal(aux)
+          }
+          clones[18].innerText = aux;
+
+          moveBall(clones[18], lines.line116);
+          setTimeout(() => {
+            moveBall(clones[18], lines.line38);
+            setTimeout(() => {
+              moveBall(clones[18], lines.line39);
+            }, 1000);
+          }, 1000);
+
+          setTimeout(() => {
+            if (log[clock + 1][5][3] === 0) {
+              let aux = parseInt(log[clock][1].substring(5, 8), 2).toString(16)
+              if (tipo_dado == "dec") {
+                aux = decimal(aux)
+              }
+              clones[14].innerText = aux;
+            } else {
+              let aux = parseInt(log[clock][1].substring(13, 16), 2).toString(16)
+              if (tipo_dado == "dec") {
+                aux = decimal(aux)
+              }
+              clones[14].innerText = aux;
+            }
+
+            clones[14].style.display = "block";
+            clones[14].style.width = "20px";
+            moveBall(clones[14], lines.line23);
+
+            let muda_resultado;
+            if (log[clock + 1][5][3] == 0) {
+              muda_resultado = log[clock + 1][3][parseInt(log[clock][1].substring(5, 8), 2)].toString();
+            } else {
+              muda_resultado = log[clock + 1][3][parseInt(log[clock][1].substring(13, 16), 2)].toString();
+            }
+
+            while (muda_resultado.length < 16) {
+              muda_resultado = "0" + muda_resultado;
+            }
+
+            muda_resultado = parseInt(complemento(muda_resultado), 2).toString(16);
+
+            while (muda_resultado.length < 4) {
+              muda_resultado = "0" + muda_resultado;
+            }
+
+            if (tipo_dado == "dec") {
+              muda_resultado = decimal(muda_resultado)
+            }
+
+            if (log[clock + 1][5][5] == "10") {
+              clones[20].style.display = "block";
+              clones[20].style.width = "60px";
+              clones[20].innerText = muda_resultado;
+
+              moveBall(clones[20], lines.line24);
+            }
+
+            if (log[clock][1].substring(0, 5) == "00100") {
+              setTimeout(() => { // Atualiza Reg comando ADD
+                let reg_muda = document.getElementById("reg" + parseInt(log[clock - 1][1].substring(13, 16), 2));
+                reg_muda.value = muda_resultado;
+              }, 1000);
+            }
+
+            if (log[clock][1].substring(0, 5) == "00101") {
+              setTimeout(() => { // Atualiza Reg comando SUB
+                let reg_muda = document.getElementById("reg" + parseInt(log[clock - 1][1].substring(13, 16), 2));
+                reg_muda.value = muda_resultado;
+              }, 1000);
+            }
+
+            if (log[clock][1].substring(0, 5) == "00110") {
+              setTimeout(() => { // Atualiza Reg comando AND
+                let reg_muda = document.getElementById("reg" + parseInt(log[clock - 1][1].substring(13, 16), 2));
+                reg_muda.value = muda_resultado;
+              }, 1000);
+            }
+
+            if (log[clock][1].substring(0, 5) == "00111") {
+              setTimeout(() => { // Atualiza Reg comando OR
+                let reg_muda = document.getElementById("reg" + parseInt(log[clock - 1][1].substring(13, 16), 2));
+                reg_muda.value = muda_resultado;
+              }, 1000);
+            }
+
+            if (log[clock][1].substring(0, 5) == "01000") {
+              setTimeout(() => { // Atualiza Reg comando NOT
+                let reg_muda = document.getElementById("reg" + parseInt(log[clock - 1][1].substring(13, 16), 2));
+                reg_muda.value = muda_resultado;
+              }, 1000);
+            }
+          }, 3000)
+          
+        }
+
+      } else if (currentStep === 6) {
+        // zero, carry, negativo
+        if (log[clock][4][0] == 1) {
+          document.getElementById("zero").style.backgroundColor = "RED";
+        }
+
+        if (log[clock][4][1] == 1) {
+          document.getElementById("carry").style.backgroundColor = "RED";
+        }
+
+        if (log[clock][4][2] == 1) {
+          document.getElementById("negativo").style.backgroundColor = "RED";
+        }
+
+        if (log[clock][1].substring(0, 5) == "00100") { // ADD
+          document.getElementById("imagem").src = "img/adicao.png";
+        } else if (log[clock][1].substring(0, 5) == "00101") { // SUB
+          document.getElementById("imagem").src = "img/subtracao.png";
+        } else if (log[clock][1].substring(0, 5) == "00110") { // AND
+          document.getElementById("imagem").src = "img/and.png";
+        } else if (log[clock][1].substring(0, 5) == "00111") { // OR
+          document.getElementById("imagem").src = "img/or.png";
+        } else if (log[clock][1].substring(0, 5) == "01000") { // NOT
+          document.getElementById("imagem").src = "img/not.png";
+        }
+
+        clones[18].style.display = "block";
+        clones[18].style.width = "60px";
+        let ula_saida;
+        if (log[clock + 1][5][3] == 0) {
+          ula_saida = log[clock + 1][3][parseInt(log[clock][1].substring(5, 8), 2)].toString();
+        } else {
+          ula_saida = log[clock + 1][3][parseInt(log[clock][1].substring(13, 16), 2)].toString();
+        }
+
+        while (ula_saida.length < 16) {
+          ula_saida = "0" + ula_saida;
+        }
+
+        let aux = parseInt(complemento(ula_saida), 2).toString(16);
+        while (aux.length < 4) {
+          aux = "0" + aux;
+        }
+
+        if (tipo_dado == "dec") {
+          aux = decimal(aux)
+        }
+        clones[18].innerText = aux;
+
+        moveBall(clones[18], lines.line35);
+        setTimeout(() => {
+          moveBall(clones[18], lines.line36);
+          setTimeout(() => {
+            moveBall(clones[18], lines.line37);
+            setTimeout(() => {
+              moveBall(clones[18], lines.line38);
+              setTimeout(() => {
+                moveBall(clones[18], lines.line39);
+              }, 1000);
+            }, 1000);
+          }, 1000);
+        }, 1000);
+
+        let teste_sinais = document.getElementById("tipo_sinais").value;
+
+        if (teste_sinais == "ativado" || teste_sinais == "teleporte") {
+          clones[28].style.display = "block";
+          clones[28].style.width = "50px";
+          clones[28].style.backgroundColor = "DodgerBlue";
+          let flag_controle = "0";
+
+          if (log[clock][4][0] == 1) {
+            flag_controle = flag_controle + "1";
+          } else {
+            flag_controle = flag_controle + "0";
+          }
+
+          if (log[clock][4][1] == 1) {
+            flag_controle = flag_controle + "1";
+          } else {
+            flag_controle = flag_controle + "0";
+          }
+
+          if (log[clock][4][2] == 1) {
+            flag_controle = flag_controle + "1";
+          } else {
+            flag_controle = flag_controle + "0";
+          }
+
+          clones[28]. innerText = flag_controle;
+
+          moveBall(clones[28], lines.line66);
+          setTimeout(() => {
+            moveBall(clones[28], lines.line67)
+          }, 1000);
+        }
+
+      } else if (currentStep === 7) {
+
+        let muda_resultado;
+        if (log[clock + 1][5][3] == 0) {
+          muda_resultado = log[clock + 1][3][parseInt(log[clock][1].substring(5, 8), 2)].toString();
+        } else {
+          muda_resultado = log[clock + 1][3][parseInt(log[clock][1].substring(13, 16), 2)].toString();
+        }
+
+        while (muda_resultado.length < 16) {
+          muda_resultado = "0" + muda_resultado;
+        }
+
+        muda_resultado = parseInt(complemento(muda_resultado), 2).toString(16);
+
+        while (muda_resultado.length < 4) {
+          muda_resultado = "0" + muda_resultado;
+        }
+
+        if (tipo_dado == "dec") {
+          muda_resultado = decimal(muda_resultado)
+        }
+
+        if (log[clock + 1][5][5] == "10") {
+          clones[20].style.display = "block";
+          clones[20].style.width = "60px";
+          clones[20].innerText = muda_resultado;
+
+          moveBall(clones[20], lines.line24);
+        }
+
+        if (log[clock][1].substring(0, 5) == "00100") {
+          console.log("passou aqui")
+          setTimeout(() => { // Atualiza Reg comando ADD
+            let reg_muda = document.getElementById("reg" + parseInt(log[clock - 1][1].substring(13, 16), 2));
+            reg_muda.value = muda_resultado;
+          }, 1000);
+        }
+
+        if (log[clock][1].substring(0, 5) == "00101") {
+          setTimeout(() => { // Atualiza Reg comando SUB
+            let reg_muda = document.getElementById("reg" + parseInt(log[clock - 1][1].substring(13, 16), 2));
+            reg_muda.value = muda_resultado;
+          }, 1000);
+        }
+
+        if (log[clock][1].substring(0, 5) == "00110") {
+          setTimeout(() => { // Atualiza Reg comando AND
+            let reg_muda = document.getElementById("reg" + parseInt(log[clock - 1][1].substring(13, 16), 2));
+            reg_muda.value = muda_resultado;
+          }, 1000);
+        }
+
+        if (log[clock][1].substring(0, 5) == "00111") {
+          setTimeout(() => { // Atualiza Reg comando OR
+            let reg_muda = document.getElementById("reg" + parseInt(log[clock - 1][1].substring(13, 16), 2));
+            reg_muda.value = muda_resultado;
+          }, 1000);
+        }
+
+        if (log[clock][1].substring(0, 5) == "01000") {
+          setTimeout(() => { // Atualiza Reg comando NOT
+            let reg_muda = document.getElementById("reg" + parseInt(log[clock - 1][1].substring(13, 16), 2));
+            reg_muda.value = muda_resultado;
+          }, 1000);
+        }
+
+      }
+
+      if (currentStep >= reset_in) {
+        reset = true;
+      }
+
+      if (hlt == true) {
+        currentStep = -10;
+
+        const div_log = document.getElementById('log');
+        let novo_label;
+
+        novo_label = document.createElement('label');
+        novo_label.textContent = "Código encerrado.";
+        novo_label.style.color = "green";
+        div_log.appendChild(novo_label);
+      }
+
+      if (reset == true) {
+        clock = clock + 1;
+        currentStep = -1;
+        reset = false;
+
+        const div_log = document.getElementById('log');
+        let novo_label;
+
+        novo_label = document.createElement('label');
+        // operação binario label log
+        if (log[clock - 1][1].substring(0, 5) == "00001") { // LDA log
+          novo_label.textContent = "Operação LDA, Memória: " + log[clock - 1][1].substring(8, 16) + ", foi carregada para o Registrador: " + log[clock - 1][1].substring(5, 8) + ", Valor carregado: " + log[clock - 1][2][parseInt(log[clock - 1][1].substring(8, 16), 2)] + ", ";
+        } else if (log[clock - 1][1].substring(0, 5) == "00010") { // LDAi log
+          novo_label.textContent = "Operação LDAi, imediato: " + log[clock - 1][1].substring(8, 16) + ", foi carregada para o Registrador: " + log[clock - 1][1].substring(5, 8) + ", ";
+        } else if (log[clock - 1][1].substring(0, 5) == "00011") { // STA log
+          novo_label.textContent = "Operação STA, Registrador: " + log[clock - 1][1].substring(5, 8) + ", foi carregada para a Memória: " + log[clock - 1][1].substring(8, 16) + ", Valor carregado: " + log[clock][2][parseInt(log[clock - 1][1].substring(8, 16), 2)] + ", ";
+        } else if (log[clock - 1][1].substring(0, 5) == "00100") { // ADD log
+          novo_label.textContent = "Operação ADD, Registrador: " + log[clock - 1][1].substring(5, 8) + " e Registrador: " + log[clock - 1][1].substring(8, 11) + ", valor somado para Registrador: " + log[clock - 1][1].substring(13, 16) + ".";
+          novo_label.style.color = "green";
+          div_log.appendChild(novo_label);
+          novo_label = document.createElement('label');
+          novo_label.style.color = "green";
+          let valor = "";
+          valor = mem_gpr[parseInt(log[clock - 1][1].substring(5, 8), 2)].toString();
+          while (valor.length < 16) {
+            valor = "0" + valor;
+          }
+          novo_label.textContent = valor;
+          div_log.appendChild(novo_label);
+          novo_label = document.createElement('label');
+          novo_label.style.color = "green";
+          valor = mem_gpr[parseInt(log[clock - 1][1].substring(8, 11), 2)].toString();
+          while (valor.length < 16) {
+            valor = "0" + valor;
+          }
+          novo_label.textContent = valor;
+          div_log.appendChild(novo_label);
+          novo_label = document.createElement('label');
+          novo_label.style.color = "green";
+          valor = mem_gpr[parseInt(log[clock - 1][1].substring(13, 16), 2)].toString();
+          while (valor.length < 16) {
+            valor = "0" + valor;
+          }
+          novo_label.textContent = valor;
+          div_log.appendChild(novo_label);
+          novo_label = document.createElement('label');
+          novo_label.style.color = "green";
+        } else if (log[clock - 1][1].substring(0, 5) == "00101") { // SUB log
+          novo_label.textContent = "Operação SUB, Registrador: " + log[clock - 1][1].substring(5, 8) + " e Registrador: " + log[clock - 1][1].substring(8, 11) + ", valor subtraido para Registrador: " + log[clock - 1][1].substring(13, 16) + ".";
+          novo_label.style.color = "green";
+          div_log.appendChild(novo_label);
+          novo_label = document.createElement('label');
+          novo_label.style.color = "green";
+          let valor = "";
+          valor = mem_gpr[parseInt(log[clock - 1][1].substring(5, 8), 2)].toString();
+          while (valor.length < 16) {
+            valor = "0" + valor;
+          }
+          novo_label.textContent = valor;
+          div_log.appendChild(novo_label);
+          novo_label = document.createElement('label');
+          novo_label.style.color = "green";
+          valor = mem_gpr[parseInt(log[clock - 1][1].substring(8, 11), 2)].toString();
+          while (valor.length < 16) {
+            valor = "0" + valor;
+          }
+          novo_label.textContent = valor;
+          div_log.appendChild(novo_label);
+          novo_label = document.createElement('label');
+          novo_label.style.color = "green";
+          valor = mem_gpr[parseInt(log[clock - 1][1].substring(13, 16), 2)].toString();
+          while (valor.length < 16) {
+            valor = "0" + valor;
+          }
+          novo_label.textContent = valor;
+          div_log.appendChild(novo_label);
+          novo_label = document.createElement('label');
+          novo_label.style.color = "green";
+        } else if (log[clock - 1][1].substring(0, 5) == "00110") { // AND log
+          novo_label.textContent = "Operação AND, Registrador: " + log[clock - 1][1].substring(5, 8) + " e Registrador: " + log[clock - 1][1].substring(8, 11) + ", valor lógico para Registrador: " + log[clock - 1][1].substring(13, 16) + ".";
+          novo_label.style.color = "green";
+          div_log.appendChild(novo_label);
+          novo_label = document.createElement('label');
+          novo_label.style.color = "green";
+          let valor = "";
+          valor = mem_gpr[parseInt(log[clock - 1][1].substring(5, 8), 2)].toString();
+          while (valor.length < 16) {
+            valor = "0" + valor;
+          }
+          novo_label.textContent = valor;
+          div_log.appendChild(novo_label);
+          novo_label = document.createElement('label');
+          novo_label.style.color = "green";
+          valor = mem_gpr[parseInt(log[clock - 1][1].substring(8, 11), 2)].toString();
+          while (valor.length < 16) {
+            valor = "0" + valor;
+          }
+          novo_label.textContent = valor;
+          div_log.appendChild(novo_label);
+          novo_label = document.createElement('label');
+          novo_label.style.color = "green";
+          valor = mem_gpr[parseInt(log[clock - 1][1].substring(13, 16), 2)].toString();
+          while (valor.length < 16) {
+            valor = "0" + valor;
+          }
+          novo_label.textContent = valor;
+          div_log.appendChild(novo_label);
+          novo_label = document.createElement('label');
+          novo_label.style.color = "green";
+        } else if (log[clock - 1][1].substring(0, 5) == "00111") { // OR log
+          novo_label.textContent = "Operação OR, Registrador: " + log[clock - 1][1].substring(5, 8) + " e Registrador: " + log[clock - 1][1].substring(8, 11) + ", valor lógico para Registrador: " + log[clock - 1][1].substring(13, 16) + ".";
+          novo_label.style.color = "green";
+          div_log.appendChild(novo_label);
+          novo_label = document.createElement('label');
+          novo_label.style.color = "green";
+          let valor = "";
+          valor = mem_gpr[parseInt(log[clock - 1][1].substring(5, 8), 2)].toString();
+          while (valor.length < 16) {
+            valor = "0" + valor;
+          }
+          novo_label.textContent = valor;
+          div_log.appendChild(novo_label);
+          novo_label = document.createElement('label');
+          novo_label.style.color = "green";
+          valor = mem_gpr[parseInt(log[clock - 1][1].substring(8, 11), 2)].toString();
+          while (valor.length < 16) {
+            valor = "0" + valor;
+          }
+          novo_label.textContent = valor;
+          div_log.appendChild(novo_label);
+          novo_label = document.createElement('label');
+          novo_label.style.color = "green";
+          valor = mem_gpr[parseInt(log[clock - 1][1].substring(13, 16), 2)].toString();
+          while (valor.length < 16) {
+            valor = "0" + valor;
+          }
+          novo_label.textContent = valor;
+          div_log.appendChild(novo_label);
+          novo_label = document.createElement('label');
+          novo_label.style.color = "green";
+        } else if (log[clock - 1][1].substring(0, 5) == "01000") { // NOT log
+          novo_label.textContent = "Operação NOT, Registrador: " + log[clock - 1][1].substring(5, 8) + ", valor lógico para Registrador: " + log[clock - 1][1].substring(13, 16) + ".";
+          novo_label.style.color = "green";
+          div_log.appendChild(novo_label);
+          novo_label = document.createElement('label');
+          novo_label.style.color = "green";
+          let valor = "";
+          valor = mem_gpr[parseInt(log[clock - 1][1].substring(5, 8), 2)].toString();
+          while (valor.length < 16) {
+            valor = "0" + valor;
+          }
+          novo_label.textContent = valor;
+          div_log.appendChild(novo_label);
+          novo_label = document.createElement('label');
+          novo_label.style.color = "green";
+          valor = mem_gpr[parseInt(log[clock - 1][1].substring(13, 16), 2)].toString();
+          while (valor.length < 16) {
+            valor = "0" + valor;
+          }
+          novo_label.textContent = valor;
+          div_log.appendChild(novo_label);
+          novo_label = document.createElement('label');
+          novo_label.style.color = "green";
+        } else if (log[clock - 1][1].substring(0, 5) == "01001") { // JZ log
+          novo_label.textContent = "Operação JZ, : Flag zero: " + log[clock - 2][4][0] + ", ";
+          if (log[clock - 2][4][0] == true) {
+            novo_label.textContent = novo_label.textContent + "Salto para Memória de Instrução: " + log[clock - 1][1].substring(8, 16) + ", ";
+          } else {
+            let aux_pc = log[clock][0].toString(2)
+            while (aux_pc.length < 8) {
+              aux_pc = "0" + aux_pc;
+            }
+            novo_label.textContent = novo_label.textContent + "Próxima Memória de Instrução: " + aux_pc + ", ";
+          }
+        } else if (log[clock - 1][1].substring(0, 5) == "01011") { // JN log
+          novo_label.textContent = "Operação JN, : Flag negativo: " + log[clock - 2][4][2] + ", ";
+          if (log[clock - 2][4][2] == true) {
+            novo_label.textContent = novo_label.textContent + "Salto para Memória de Instrução: " + log[clock - 1][1].substring(8, 16) + ", ";
+          } else {
+            let aux_pc = log[clock][0].toString(2)
+            while (aux_pc.length < 8) {
+              aux_pc = "0" + aux_pc;
+            }
+            novo_label.textContent = novo_label.textContent + "Próxima Memória de Instrução: " + aux_pc + ", ";
+          }
+        } else if (log[clock - 1][1].substring(0, 5) == "01100") { // JMP log
+          novo_label.textContent = "Operação JMP, Salto para Memória de Instrução: " + log[clock - 1][1].substring(8, 16) + ", ";
+        } else if (log[clock - 1][1].substring(0, 5) == "01101") { // HLT log (nao tem log hlt, acontece antes do log o encerramento)
+          novo_label.textContent = "Operação HLT, Código Encerrado, ";
+        }
+
+        // end binario
+        novo_label.textContent = novo_label.textContent + "Instrução " + log[clock - 1][0] + " encerrada.";
+        novo_label.style.color = "green";
+        div_log.appendChild(novo_label);
+      }
+
+      currentStep++;
+    }
+
+    function complemento(str) {
+        let negativo = false;
+        if (str.includes("-")) {
+            negativo = true;
+        }
+
+        let s = str.replace(/-/g, "");
+
+        let mag = parseInt(s, 2);
+
+        let val = mag;
+        if (negativo) {
+            val = -mag;
+        }
+
+        let bin = (val & 0xFFFF).toString(2);
+
+        if (bin.length < 16) {
+            bin = bin.padStart(16, "0");
+        }
+
+        return bin;
+    }
+
+    function complemento_8(str) {
+        let negativo = false;
+        if (str.includes("-")) {
+            negativo = true;
+        }
+
+        let s = str.replace(/-/g, "");
+
+        let mag = parseInt(s, 2);
+
+        let val = mag;
+        if (negativo) {
+            val = -mag;
+        }
+
+        let bin = (val & 0xFF).toString(2);
+
+        if (bin.length < 8) {
+            bin = bin.padStart(8, "0");
+        }
+
+        return bin;
+    }
+
+    let icone_play = true;
+    let timeouts = []
+    let tempos = [0, 4000, 4000, 6000, 6000, 4000, 9000, 2000]
+
+    function play() {
+        if (icone_play == true) {
+          document.getElementById("img_play").src = "img/pause.png";
+          icone_play = false;
+
+          let ciclo = log.length;
+          let time_set;
+
+          advance();
+          for (let i = clock + 1; i < ciclo; i++) {
+            let id_time = setTimeout(() => {
+              advance();
+            }, 35000*i);
+            timeouts.push(id_time);
+          }
+
+        } else {
+          document.getElementById("img_play").src = "img/play.png";
+          icone_play = true;
+
+          for (let i = 0; i < timeouts.length; i++) {
+            clearTimeout(timeouts[i]);
+          }
+        }
+
+    }
+
+    function advance() {
+      advanceData();
+      let rest;
+      let tempo_extra = 4000;
+      if (currentStep != 2) {
+        rest = reset_in;
+      } else {
+        rest = reset_in - 1;
+      } 
+
+      for (let i = 0; i < rest; i++) {
+        setTimeout(() => {
+          advanceData();
+        }, tempo_extra);
+        tempo_extra = tempo_extra + tempos[i + 1];
+      }
+
+    }
+
+    function reset_func() {
+      document.getElementById("ula_op").innerHTML = "OP: ";
+      document.getElementById("rega").innerHTML = "REG A: ";
+      document.getElementById("regb").innerHTML = "REG B: ";
+      document.getElementById("result").innerHTML = "";
+      document.getElementById("flag1").style.background = "#d3d3d3";
+      currentStep = 0;
+      updateLines();
+      document.getElementById("apagar1").remove();
+      document.getElementById("apagar2").remove();
+      document.getElementById("apagar3").remove();
+      data.style.display = "none";
+    }
+
+    window.onload = () => {
+      updateLines();
+      updateEditor();
+    };
+
+    button_play.addEventListener("click", play);
+    button_step.addEventListener("click", advanceData);
+    button_play_step.addEventListener("click", advance);
+    button_reset.addEventListener("click", reset_func);
+
+    const tipo_dado = document.getElementById("tipo_dado");
+    tipo_dado.addEventListener("change", muda_dado);
+
+    const controle_sinais = document.getElementById("tipo_sinais");
+    controle_sinais.addEventListener("change", verifica_sinais);
+
+    const tipo_simulacao = document.getElementById("tipo_simulador");
+    tipo_simulacao.addEventListener("change", muda_simulacao);
+
+    function verifica_sinais() {
+      const sinais = document.getElementById("tipo_sinais").value;
+      if (sinais == "desativado") {
+        for (let i = 48; i <= 67; i++) {
+          document.getElementById("line" + i).style.strokeWidth = 0;
+        }
+        document.getElementById("line90").style.strokeWidth = 0;
+        document.getElementById("line91").style.strokeWidth = 0;
+        document.getElementById("line92").style.strokeWidth = 0;
+        document.getElementById("line93").style.strokeWidth = 0;
+        document.getElementById("line94").style.strokeWidth = 0;
+        document.getElementById("line95").style.strokeWidth = 0;
+        document.getElementById("line96").style.strokeWidth = 0;
+
+        document.getElementById("line97").style.strokeWidth = 0;
+        document.getElementById("line98").style.strokeWidth = 0;
+        document.getElementById("line99").style.strokeWidth = 0;
+        document.getElementById("line100").style.strokeWidth = 0;
+        document.getElementById("line101").style.strokeWidth = 0;
+        document.getElementById("line102").style.strokeWidth = 0;
+        document.getElementById("line103").style.strokeWidth = 0;
+        document.getElementById("line104").style.strokeWidth = 0;
+
+        // controle multiciclo
+        document.getElementById("line117").style.strokeWidth = 0;
+        document.getElementById("line118").style.strokeWidth = 0;
+        document.getElementById("line119").style.strokeWidth = 0;
+        document.getElementById("line120").style.strokeWidth = 0;
+
+      } else if (sinais == "ativado") {
+        for (let i = 48; i <= 67; i++) {
+          document.getElementById("line" + i).style.strokeWidth = 2;
+        }
+        document.getElementById("line49").style.strokeWidth = 0;
+        document.getElementById("line90").style.strokeWidth = 2;
+        document.getElementById("line51").style.strokeWidth = 0;
+        document.getElementById("line91").style.strokeWidth = 2;
+        document.getElementById("line53").style.strokeWidth = 0;
+        document.getElementById("line92").style.strokeWidth = 2;
+        document.getElementById("line57").style.strokeWidth = 0;
+        document.getElementById("line93").style.strokeWidth = 2;
+        document.getElementById("line59").style.strokeWidth = 0;
+        document.getElementById("line94").style.strokeWidth = 2;
+        document.getElementById("line63").style.strokeWidth = 0;
+        document.getElementById("line95").style.strokeWidth = 2;
+        document.getElementById("line65").style.strokeWidth = 0;
+        document.getElementById("line96").style.strokeWidth = 2;
+
+        document.getElementById("line97").style.strokeWidth = 0;
+        document.getElementById("line98").style.strokeWidth = 0;
+        document.getElementById("line99").style.strokeWidth = 0;
+        document.getElementById("line100").style.strokeWidth = 0;
+        document.getElementById("line101").style.strokeWidth = 0;
+        document.getElementById("line102").style.strokeWidth = 0;
+        document.getElementById("line103").style.strokeWidth = 0;
+        document.getElementById("line104").style.strokeWidth = 0;
+
+        // controle multiciclo
+        document.getElementById("line117").style.strokeWidth = 2;
+        document.getElementById("line118").style.strokeWidth = 2;
+        document.getElementById("line119").style.strokeWidth = 2;
+        document.getElementById("line120").style.strokeWidth = 2;
+
+      } else if (sinais == "teleporte") {
+        for (let i = 48; i <= 67; i++) {
+          document.getElementById("line" + i).style.strokeWidth = 0;
+        }
+        document.getElementById("line90").style.strokeWidth = 0;
+        document.getElementById("line91").style.strokeWidth = 0;
+        document.getElementById("line92").style.strokeWidth = 0;
+        document.getElementById("line93").style.strokeWidth = 0;
+        document.getElementById("line94").style.strokeWidth = 0;
+        document.getElementById("line95").style.strokeWidth = 0;
+        document.getElementById("line96").style.strokeWidth = 0;
+
+        document.getElementById("line97").style.strokeWidth = 2;
+        document.getElementById("line98").style.strokeWidth = 2;
+        document.getElementById("line99").style.strokeWidth = 2;
+        document.getElementById("line100").style.strokeWidth = 2;
+        document.getElementById("line101").style.strokeWidth = 2;
+        document.getElementById("line102").style.strokeWidth = 2;
+        document.getElementById("line103").style.strokeWidth = 2;
+        document.getElementById("line104").style.strokeWidth = 2;
+      }
+
+    }
+
+    function muda_dado() {
+      if (tipo_dado.value == "hex") {
+        for (let i = 0; i < clones.length; i++) {
+          clones[i].innerText = parseInt(clones[i].innerText, 10).toString(16);
+        }
+        for (let i = 0; i < 8; i++) {
+          document.getElementById("reg" + i).value = parseInt(document.getElementById("reg" + i).value, 10).toString(16);
+        }
+        for (let i = 0; i < 256; i++) {
+          document.getElementById("m_dad" + i).value = parseInt(document.getElementById("m_dad" + i).value, 10).toString(16);
+        }
+      }
+      if (tipo_dado.value == "dec") {
+        for (let i = 0; i < clones.length; i++) {
+          clones[i].innerText = decimal(clones[i].innerText);
+        }
+        for (let i = 0; i < 8; i++) {
+          document.getElementById("reg" + i).value = decimal(document.getElementById("reg" + i).value);
+        }
+        for (let i = 0; i < 256; i++) {
+          document.getElementById("m_dad" + i).value = decimal(document.getElementById("m_dad" + i).value);
+        }
+      }
+    }
+
+    function muda_simulacao() {
+      let tipo = document.getElementById("tipo_simulador");
+      if (tipo.value == "monociclo") {
+        document.getElementById("mar").style.display = "none";
+        document.getElementById("ir").style.display = "none";
+        document.getElementById("mdr").style.display = "none";
+        document.getElementById("a").style.display = "none";
+        document.getElementById("b").style.display = "none";
+        document.getElementById("r").style.display = "none";
+
+        document.getElementById("line105").style.strokeWidth = 0;
+        document.getElementById("line106").style.strokeWidth = 0;
+        document.getElementById("line107").style.strokeWidth = 0;
+        document.getElementById("line108").style.strokeWidth = 0;
+        document.getElementById("line109").style.strokeWidth = 0;
+        document.getElementById("line110").style.strokeWidth = 0;
+
+        document.getElementById("line111").style.strokeWidth = 0;
+        document.getElementById("line112").style.strokeWidth = 0;
+        document.getElementById("line113").style.strokeWidth = 0;
+        document.getElementById("line114").style.strokeWidth = 0;
+        document.getElementById("line115").style.strokeWidth = 0;
+        document.getElementById("line116").style.strokeWidth = 0;
+
+        document.getElementById("line122").style.strokeWidth = 2;
+
+        // controle multiciclo
+        document.getElementById("line117").style.strokeWidth = 0;
+        document.getElementById("line118").style.strokeWidth = 0;
+        document.getElementById("line119").style.strokeWidth = 0;
+        document.getElementById("line120").style.strokeWidth = 0;
+
+        document.getElementById("line15").style.strokeWidth = 2;
+        document.getElementById("line16").style.strokeWidth = 2;
+        document.getElementById("line17").style.strokeWidth = 2;
+        document.getElementById("line46").style.strokeWidth = 2;
+        document.getElementById("line29").style.strokeWidth = 2;
+        document.getElementById("line30").style.strokeWidth = 2;
+        document.getElementById("line37").style.strokeWidth = 2;
+
+      } else if (tipo.value = "multiciclo") {
+        document.getElementById("mar").style.display = "flex";
+        document.getElementById("ir").style.display = "flex";
+        document.getElementById("mdr").style.display = "flex";
+        document.getElementById("a").style.display = "flex";
+        document.getElementById("b").style.display = "flex";
+        document.getElementById("r").style.display = "flex";
+
+        document.getElementById("line105").style.strokeWidth = 2;
+        document.getElementById("line106").style.strokeWidth = 2;
+        document.getElementById("line107").style.strokeWidth = 2;
+        document.getElementById("line108").style.strokeWidth = 2;
+        document.getElementById("line109").style.strokeWidth = 2;
+        document.getElementById("line110").style.strokeWidth = 2;
+
+        document.getElementById("line111").style.strokeWidth = 2;
+        document.getElementById("line112").style.strokeWidth = 2;
+        document.getElementById("line113").style.strokeWidth = 2;
+        document.getElementById("line114").style.strokeWidth = 2;
+        document.getElementById("line115").style.strokeWidth = 2;
+        document.getElementById("line116").style.strokeWidth = 2;
+
+        // controle multiciclo
+        document.getElementById("line117").style.strokeWidth = 2;
+        document.getElementById("line118").style.strokeWidth = 2;
+        document.getElementById("line119").style.strokeWidth = 2;
+        document.getElementById("line120").style.strokeWidth = 2;
+
+        document.getElementById("line15").style.strokeWidth = 0;
+        document.getElementById("line16").style.strokeWidth = 0;
+        document.getElementById("line17").style.strokeWidth = 0;
+        document.getElementById("line46").style.strokeWidth = 0;
+        document.getElementById("line29").style.strokeWidth = 0;
+        document.getElementById("line30").style.strokeWidth = 0;
+        document.getElementById("line37").style.strokeWidth = 0;
+
+        document.getElementById("line122").style.strokeWidth = 0;
+      }
+
+    }
+
+    function updateEditor() {
+      const textarea_inst = document.getElementById("editor_inst");
+      const linenos_inst = document.getElementById("linenos_inst");
+
+      const textarea_dads = document.getElementById("editor_dads");
+      const linenos_dads = document.getElementById("linenos_dads");
+
+
+      const lines_inst = textarea_inst.value.split("\n").length;
+      linenos_inst.innerHTML = "";
+      for (let i = 0; i <= lines_inst - 1; i++) {
+        const div_inst = document.createElement("div");
+        div_inst.id = "num_linha" + i;
+        div_inst.textContent = i + "-";
+        linenos_inst.appendChild(div_inst);
+      }
+
+      const lines_dads = textarea_dads.value.split("\n").length;
+      linenos_dads.innerHTML = "";
+      for (let i = 0; i <= lines_dads - 1; i++) {
+        const div_dads = document.createElement("div");
+        div_dads.textContent = i + "-";
+        linenos_dads.appendChild(div_dads);
+      }
+    }
+
+    function syncScroll() {
+      const textarea_inst = document.getElementById("editor_inst");
+      const linenos_inst = document.getElementById("linenos_inst");
+      linenos_inst.scrollTop = textarea_inst.scrollTop;
+
+      const textarea_dads = document.getElementById("editor_dads");
+      const linenos_dads = document.getElementById("linenos_dads");
+      linenos_dads.scrollTop = textarea_dads.scrollTop;
+    }
+
+    updateLines();
+    updateEditor();
+  </script>
+</body>
+</html>
