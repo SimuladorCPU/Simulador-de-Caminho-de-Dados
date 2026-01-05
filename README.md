@@ -11,9 +11,9 @@ O simulador implementa uma CPU educacional baseada em uma arquitetura simplifica
 - Suporte aos modos de execução **Monociclo** e **Multiciclo**
    
   **Modo Monociclo**
- ![Monociclo](mono.png)
+ ![Monociclo](img/mono.png)
   **Modo Multiciclo**
- ![Multicilo](multi.png)
+ ![Multicilo](img/multi.png)
 
 ---
 
