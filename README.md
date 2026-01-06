@@ -203,7 +203,7 @@ Os códigos de operação suportados são:
 
 ### Exemplos de Códigos
 
-## TESTE CONTADOR
+## Teste Contador
 
 ```Assembly
        LDA CNT, R0
@@ -215,6 +215,36 @@ CONTA: ADD R0, R2, R0
        JZ FIM
        JMP CONTA
        FIM: HLT
+```
+
+```Dados
+CNT 1
+END 5
+```
+
+## Teste Comparador
+
+```Assembly
+       LDA N1, R1
+       LDA N2, R2
+       LDAi 1, R3
+TESTA: SUB R2, R1, R0
+       JZ CASO3
+       JN CASO2
+CASO1: STA R3, N1menorN2
+       JMP FIM
+CASO2: STA R3, N1maiorN2
+       JMP FIM
+CASO3: STA R3, N1igualN2
+FIM:   HLT
+```
+
+```Dados
+N1 3
+N2 4
+N1menorN2 0
+N1maiorN2 0
+N1igualN2 0
 ```
 
 ---
