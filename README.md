@@ -201,6 +201,24 @@ Os códigos de operação suportados são:
 
 ---
 
+### Exemplos de Códigos
+
+## TESTE CONTADOR
+
+```Assembly
+       LDA CNT, R0
+       LDA END, R1
+       LDAi 1, R2
+CONTA: ADD R0, R2, R0
+       STA R0, CNT
+       SUB R1, R0, R3
+       JZ FIM
+       JMP CONTA
+       FIM: HLT
+```
+
+---
+
 ## Contato e Sugestões
 
 Sugestões, relatos de erros e contribuições podem ser enviados por meio do **repositório GitHub do projeto**.  
