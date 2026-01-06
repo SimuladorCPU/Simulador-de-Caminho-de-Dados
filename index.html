@@ -626,8 +626,16 @@
 
           if (codigo_lista[i].split(" ")[0].toLowerCase() == "sta" || codigo_lista[i].split(" ")[0].toLowerCase() == "lda") {
 
-            if (codigo_lista[i].split(" ")[1].replaceAll(",", "") == variaveis[ii][0] || codigo_lista[i].split(" ")[2] == variaveis[ii][0]) {
-              codigo_lista[i] = codigo_lista[i].replaceAll(variaveis[ii][0], variaveis[ii][2])
+            if (codigo_lista[i].split(" ")[1].replaceAll(",", "") == variaveis[ii][0]) {
+              let aux = codigo_lista[i].split(" ")
+              aux[1] = aux[1].replaceAll(variaveis[ii][0], variaveis[ii][2])
+              codigo_lista[i] = aux.join(" ")
+            }
+
+            if (codigo_lista[i].split(" ")[2] == variaveis[ii][0]) {
+              let aux = codigo_lista[i].split(" ")
+              aux[2] = aux[2].replaceAll(variaveis[ii][0], variaveis[ii][2])
+              codigo_lista[i] = aux.join(" ")
             }
           }
 
