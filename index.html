@@ -4379,18 +4379,18 @@
 
     }
 
-    function reset_func() {
-      document.getElementById("ula_op").innerHTML = "OP: ";
-      document.getElementById("rega").innerHTML = "REG A: ";
-      document.getElementById("regb").innerHTML = "REG B: ";
-      document.getElementById("result").innerHTML = "";
-      document.getElementById("flag1").style.background = "#d3d3d3";
-      currentStep = 0;
-      updateLines();
-      document.getElementById("apagar1").remove();
-      document.getElementById("apagar2").remove();
-      document.getElementById("apagar3").remove();
-      data.style.display = "none";
+    function reset_func() { // RESET
+      clock = 0
+      currentStep = 1
+      hlt = false
+      for (let i = 0; i < clones.length; i++) {
+        clones[i].style.display = "none"
+      }
+
+      for (let i = 0; i < 255; i++) {
+        document.getElementById("num_linha" + i).style.backgroundColor = "";
+      }
+
     }
 
     window.onload = () => {
