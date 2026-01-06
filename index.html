@@ -2509,6 +2509,7 @@
           clones[4].innerText = p1 + " " + p2 + " " + p3 + " " + p4;
 
           setTimeout(() => {
+            clones[3].style.display = "block";
             moveBall(clones[3], lines.line4);
 
             setTimeout(() => {
@@ -2521,7 +2522,6 @@
           }, 3000)
 
           setTimeout(() => {
-            clones[3].style.display = "block";
             clones[4].style.display = "block";
             moveBall(clones[4], lines.line112);
             setTimeout(() => {
@@ -2627,6 +2627,11 @@
             while (p3.length < 2) {
               p3 = "0" + p3;
             }
+
+            if (tipo_dado == "dec") {
+              p3 = decimal(p3)
+            }
+
             clones[6].innerText = p3;
             clones[6].style.width = "40px";
 
@@ -3482,6 +3487,11 @@
         } else if (tipo_sim == "multiciclo") { // multiclo clock 4
 
           if (log[clock][1].substring(0, 5) == "00001") { // LDA
+
+            setTimeout(() => {
+              currentStep += 10 // clock a mais evitar
+            }, 3000)
+
             clones[19].style.display = "block";
             moveBall(clones[19], line113);
 
@@ -3534,6 +3544,10 @@
             }, 2000);
           
           } else if (log[clock][1].substring(0, 5) == "00011") { // STA 4
+
+            setTimeout(() => {
+              currentStep += 10 // clock a mais evitar
+            }, 3000)
 
             clones[15].style.display = "block";
             clones[15].style.width = "60px";
@@ -3842,6 +3856,11 @@
             }, 1000);
           }
         } else if (tipo_sim == "multiciclo") { // clock 5
+
+          setTimeout(() => {
+            currentStep += 10 // clock a mais evitar
+          }, 3000)
+
           clones[18].style.display = "block";
           clones[18].style.width = "60px";
           let ula_saida;
@@ -3923,35 +3942,35 @@
 
             if (log[clock][1].substring(0, 5) == "00100") {
               setTimeout(() => { // Atualiza Reg comando ADD
-                let reg_muda = document.getElementById("reg" + parseInt(log[clock - 1][1].substring(13, 16), 2));
+                let reg_muda = document.getElementById("reg" + parseInt(log[clock][1].substring(13, 16), 2));
                 reg_muda.value = muda_resultado;
               }, 1000);
             }
 
             if (log[clock][1].substring(0, 5) == "00101") {
               setTimeout(() => { // Atualiza Reg comando SUB
-                let reg_muda = document.getElementById("reg" + parseInt(log[clock - 1][1].substring(13, 16), 2));
+                let reg_muda = document.getElementById("reg" + parseInt(log[clock][1].substring(13, 16), 2));
                 reg_muda.value = muda_resultado;
               }, 1000);
             }
 
             if (log[clock][1].substring(0, 5) == "00110") {
               setTimeout(() => { // Atualiza Reg comando AND
-                let reg_muda = document.getElementById("reg" + parseInt(log[clock - 1][1].substring(13, 16), 2));
+                let reg_muda = document.getElementById("reg" + parseInt(log[clock][1].substring(13, 16), 2));
                 reg_muda.value = muda_resultado;
               }, 1000);
             }
 
             if (log[clock][1].substring(0, 5) == "00111") {
               setTimeout(() => { // Atualiza Reg comando OR
-                let reg_muda = document.getElementById("reg" + parseInt(log[clock - 1][1].substring(13, 16), 2));
+                let reg_muda = document.getElementById("reg" + parseInt(log[clock][1].substring(13, 16), 2));
                 reg_muda.value = muda_resultado;
               }, 1000);
             }
 
             if (log[clock][1].substring(0, 5) == "01000") {
               setTimeout(() => { // Atualiza Reg comando NOT
-                let reg_muda = document.getElementById("reg" + parseInt(log[clock - 1][1].substring(13, 16), 2));
+                let reg_muda = document.getElementById("reg" + parseInt(log[clock][1].substring(13, 16), 2));
                 reg_muda.value = muda_resultado;
               }, 1000);
             }
