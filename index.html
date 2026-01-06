@@ -1213,11 +1213,19 @@
         mem_dados[i] = memoria;
       }
 
+      let tipo_dado = document.getElementById("tipo_dado").value;
+
       for (let i = 0; i <= 255; i++) {
-        let aux = parseInt(complemento(document.getElementById("m_dad" + i).value), 2).toString(16);
+        let aux;
+
+        aux = parseInt(complemento(document.getElementById("m_dad" + i).value), 2).toString(16);
 
         while (aux.length < 4) {
           aux = "0" + aux;
+        }
+
+        if (tipo_dado == "dec") {
+          aux = decimal(aux)
         }
 
         document.getElementById("m_dad" + i).value = aux;
@@ -3175,6 +3183,44 @@
             }, 4000)
 
           }
+
+          // PC
+          clones[13].style.width = "40px";
+          let novo_pc;
+          if (log[clock + 1][5][0] === 0) {
+            let p3 = complemento_8(log[clock][1].toString().substring(8, 16));
+            p3 = parseInt(p3, 2).toString(16);
+
+            while (p3.length < 2) {
+              p3 = "0" + p3;
+            }
+            
+            novo_pc = p3;
+
+            if (tipo_dado == "dec") {
+              novo_pc = decimal(novo_pc)
+            }
+            clones[13].innerText = novo_pc;
+
+          } else {
+            novo_pc = parseInt(log[clock + 1][0].toString(2), 2).toString(16);
+            while (novo_pc.length < 2) {
+              novo_pc = "0" + novo_pc;
+            }
+
+            if (tipo_dado == "dec") {
+              novo_pc = decimal(novo_pc)
+            }
+            clones[13].innerText = novo_pc;
+          }
+          setTimeout(() => {
+            clones[13].style.display = "block";
+            moveBall(clones[13], lines.line7);
+            setTimeout(() => {
+              document.getElementById("pc_valor").value = novo_pc;
+              clones[13].style.display = "none"
+            }, 1000)
+          }, 1000);
 
         }
 
