@@ -201,11 +201,11 @@ Os códigos de operação suportados são:
 
 ---
 
-### Exemplos de Códigos
+## Exemplos de Códigos
 
 ## Teste Contador
 
-# Assembly
+### Assembly
 
 ```Assembly
        LDA CNT, R0
@@ -219,7 +219,7 @@ CONTA: ADD R0, R2, R0
        FIM: HLT
 ```
 
-# Dados
+### Dados
 
 ```Dados
 CNT 1
@@ -228,7 +228,7 @@ END 5
 
 ## Teste Comparador
 
-# Assembly
+### Assembly
 
 ```Assembly
        LDA N1, R1
@@ -245,7 +245,7 @@ CASO3: STA R3, N1igualN2
 FIM:   HLT
 ```
 
-# Dados
+### Dados
 
 ```Dados
 N1 3
