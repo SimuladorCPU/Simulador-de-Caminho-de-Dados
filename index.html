@@ -1213,10 +1213,15 @@
           div_log.appendChild(novo_label);
         }
       }
+
+      let tipo_dado = document.getElementById("tipo_dado").value;
+
       for (let i = 0; i <= 255; i++) {
         if (i < codigo_binario.length) {
           let m_input = document.getElementById("m_ins" + i);
-          m_input.value = codigo_binario[i];
+          let aux = codigo_binario[i]
+
+          m_input.value = aux;
         } else {
           let m_input = document.getElementById("m_ins" + i);
           m_input.value = "0000";
@@ -1233,7 +1238,7 @@
         mem_dados[i] = memoria;
       }
 
-      let tipo_dado = document.getElementById("tipo_dado").value;
+      
 
       for (let i = 0; i <= 255; i++) {
         let aux;
@@ -1520,14 +1525,23 @@
         }
       }
 
-    for (let i = 0; i < 255; i++) {
+    for (let i = 0; i < 255; i++) { // ARRUMAR AQUI
+
+      let tipo_dado = document.getElementById("tipo_dado").value;
+
       let m_input = document.getElementById("m_ins" + i).value;
       let p1 = parseInt(m_input.substring(0, 8), 2).toString(16);
       let p2 = parseInt(complemento_8(m_input.substring(8, 16)), 2).toString(16);
       let aux = p1 + p2;
+
       while (aux.length < 4) {
         aux = "0" + aux;
       }
+
+      if (tipo_dado == "dec") {
+        aux = decimal(aux)
+      }
+
       document.getElementById("m_ins" + i).value = aux
     }
 
@@ -3360,7 +3374,7 @@
                 aux = decimal(aux)
               }
               reg_muda.value = aux;
-            }, 1000);
+            }, 5000);
           }
 
           let teste_sinais = document.getElementById("tipo_sinais").value;
@@ -4476,7 +4490,24 @@
       }
 
       for (let i = 0; i < 255; i++) {
-        document.getElementById("num_linha" + i).style.backgroundColor = "";
+        let aux = document.getElementById("num_linha" + i);
+
+        if (aux === null) {
+
+        } else {
+          aux.style.backgroundColor = ""
+        }
+        
+      }
+
+      for (let i = 0; i < 8; i++) {
+        document.getElementById("reg" + i).value = "0000";
+      }
+      for (let i = 0; i < 256; i++) {
+        document.getElementById("m_dad" + i).value = "0000";
+      }
+      for (let i = 0; i < 256; i++) {
+        document.getElementById("m_ins" + i).value = "0000";
       }
 
     }
@@ -4598,6 +4629,9 @@
         for (let i = 0; i < 256; i++) {
           document.getElementById("m_dad" + i).value = parseInt(document.getElementById("m_dad" + i).value, 10).toString(16);
         }
+        for (let i = 0; i < 256; i++) {
+          document.getElementById("m_ins" + i).value = parseInt(document.getElementById("m_dad" + i).value, 10).toString(16);
+        }
       }
       if (tipo_dado.value == "dec") {
         for (let i = 0; i < clones.length; i++) {
@@ -4608,6 +4642,9 @@
         }
         for (let i = 0; i < 256; i++) {
           document.getElementById("m_dad" + i).value = decimal(document.getElementById("m_dad" + i).value);
+        }
+        for (let i = 0; i < 256; i++) {
+          document.getElementById("m_ins" + i).value = decimal(document.getElementById("m_dad" + i).value);
         }
       }
     }
