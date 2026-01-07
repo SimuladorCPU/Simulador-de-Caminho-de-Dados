@@ -3343,9 +3343,6 @@
               let reg_muda = document.getElementById("reg" + parseInt(log[clock - 1][1].substring(5, 8), 2));
               let novo_valor = log[clock - 1][1].substring(8, 16);
 
-              console.log("reg",parseInt(log[clock - 1][1].substring(5, 8), 2))
-              console.log("valor",[clock - 1][1].substring(8, 16))
-
               while (novo_valor.length < 16) {
                 novo_valor = "0" + novo_valor;
               }
