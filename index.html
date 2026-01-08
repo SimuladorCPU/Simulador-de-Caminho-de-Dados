@@ -4532,6 +4532,7 @@
     tipo_simulacao.addEventListener("change", muda_simulacao);
 
     function verifica_sinais() {
+      const modo = document.getElementById("tipo_simulador").value;
       const sinais = document.getElementById("tipo_sinais").value;
       if (sinais == "desativado") {
         for (let i = 48; i <= 67; i++) {
@@ -4614,6 +4615,11 @@
         document.getElementById("line102").style.strokeWidth = 2;
         document.getElementById("line103").style.strokeWidth = 2;
         document.getElementById("line104").style.strokeWidth = 2;
+      }
+
+      if (modo == "monociclo") {
+        document.getElementById("line119").style.strokeWidth = 0;
+        document.getElementById("line120").style.strokeWidth = 0;
       }
 
     }
@@ -4765,6 +4771,17 @@
       const linenos_dads = document.getElementById("linenos_dads");
       linenos_dads.scrollTop = textarea_dads.scrollTop;
     }
+
+    window.onload = function() {
+      document.getElementById("mar").style.display = "none";
+      document.getElementById("ir").style.display = "none";
+      document.getElementById("mdr").style.display = "none";
+      document.getElementById("a").style.display = "none";
+      document.getElementById("b").style.display = "none";
+      document.getElementById("r").style.display = "none";
+      document.getElementById("line119").style.strokeWidth = 0;
+      document.getElementById("line120").style.strokeWidth = 0;
+    };
 
     updateLines();
     updateEditor();
