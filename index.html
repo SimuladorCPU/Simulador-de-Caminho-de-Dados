@@ -2697,8 +2697,11 @@
               clones[20].innerText = aux;
 
               setTimeout(() => {
-                clones[20].style.display = "block";
-                moveBall(clones[20], lines.line24);
+                if (log[clock - 1][1].substring(0, 5) != "00100" && log[clock - 1][1].substring(0, 5) != "00101") {
+                  clones[20].style.display = "block";
+                  moveBall(clones[20], lines.line24);
+                  console.log("mux3")
+                }
               }, 4000);
             }
 
@@ -2927,6 +2930,7 @@
                 }
                 clones[20].innerText = aux3;
                 moveBall(clones[20], lines.line24);
+                console.log("mux3-p2")
               }
 
               if (log[clock - 1][1].substring(0, 5) == "00011") {
@@ -3105,6 +3109,7 @@
                 clones[20].innerText = muda_resultado;
 
                 moveBall(clones[20], lines.line24);
+                console.log("mux3-p3")
               }
 
               if (log[clock - 1][1].substring(0, 5) == "00100") {
@@ -3601,6 +3606,7 @@
             }
             clones[20].innerText = aux3;
             moveBall(clones[20], lines.line24);
+            console.log("mux3-p4")
 
             setTimeout(() => {
               let reg_muda = document.getElementById("reg" + parseInt(log[clock][1].substring(5, 8), 2));
@@ -3870,6 +3876,7 @@
               }
               clones[20].innerText = aux3;
               moveBall(clones[20], lines.line24);
+              console.log("mux3-p5")
             }, 1000);
 
             setTimeout(() => {
@@ -4184,6 +4191,7 @@
               clones[20].innerText = muda_resultado;
 
               moveBall(clones[20], lines.line24);
+              console.log("mux3-p6")
             }
 
             if (log[clock][1].substring(0, 5) == "00100") {
