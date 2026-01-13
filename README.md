@@ -257,6 +257,18 @@ N1igualN2 0
 
 ---
 
+## Créditos
+
+Este trabalho foi desenvolvido como Projeto de Graduação em Engenharia de Computação da Universidade Federal do Rio Grande (FURG).
+
+Desenvolvedor: Gabriel Barbosa
+Orientador: Ewerson Carvalho
+
+O Trabalho de Conclusão de Curso (TCC) está disponível para download no link abaixo:
+[TCC](img/PG_II_T2.pdf)
+
+---
+
 ## Contato e Sugestões
 
 Sugestões, relatos de erros e contribuições podem ser enviados por meio do e-mail simuladorcpu26@gmail.com.  
