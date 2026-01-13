@@ -259,5 +259,4 @@ N1igualN2 0
 
 ## Contato e Sugestões
 
-Sugestões, relatos de erros e contribuições podem ser enviados por meio do **repositório GitHub do projeto**.  
-As mensagens enviadas pelo sistema de issues ou contato do Git são encaminhadas para os e-mails dos desenvolvedores responsáveis.
+Sugestões, relatos de erros e contribuições podem ser enviados por meio do e-mail simuladorcpu26@gmail.com.  
