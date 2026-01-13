@@ -132,7 +132,7 @@ Cada formato especifica a posição dos campos como **opcode**, registradores e 
 
 Os formatos serão apresentados por uma **figura**, facilitando a visualização da organização dos 16 bits e o entendimento do processo de decodificação das instruções.
 
-![Instruções](ISA_instrucoes.png)
+![Instruções](img/ISA_instrucoes.png)
 
 ---
 
