@@ -265,7 +265,7 @@ Desenvolvedor: Gabriel Barbosa
 Orientador: Ewerson Carvalho
 
 O Trabalho de Conclusão de Curso (TCC) está disponível para download no link abaixo:
-[TCC](img/PG_II_T2.pdf)
+[Trabalho de Conclusão](img/PG_II_T2.pdf)
 
 ---
 
