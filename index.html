@@ -182,7 +182,7 @@
       <option value="multiciclo">Multiciclo</option>
     </select>
     <select id="tipo_dado" style="position: absolute; left: 185px; top: 30px;">
-      <option value="bin">Hexadecimal</option>
+      <option value="hex">Hexadecimal</option>
       <option value="dec">Decimal</option>
     </select>
     <select id="tipo_sinais" style="position: absolute; top: 30px; left: 295px;">
@@ -528,6 +528,10 @@
     <path id="line122" stroke="white" stroke-width="2" fill="none" />
     <path id="line123" stroke="white" stroke-width="2" fill="none" />
     <path id="line124" stroke="white" stroke-width="2" fill="none" />
+
+    <!-- tele multiciclo-->
+    <path id="line125" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
+    <path id="line126" stroke="DeepSkyBlue" stroke-width="2" fill="none" />
   </svg>
 
   <!-- Bolinha -->
@@ -1238,8 +1242,6 @@
         mem_dados[i] = memoria;
       }
 
-      
-
       for (let i = 0; i <= 255; i++) {
         let aux;
 
@@ -1861,6 +1863,10 @@
       line122: document.getElementById("line122"),
       line123: document.getElementById("line123"),
       line124: document.getElementById("line124"),
+
+      // tele multiciclo
+      line125: document.getElementById("line125"),
+      line126: document.getElementById("line126"),
     };
 
     const svg = document.getElementById("svg");
@@ -2053,6 +2059,7 @@
       // controle multiciclo
       const p117 = getConnectionPoints(boxes.box22, boxes.box56);
       const p118 = getConnectionPoints(boxes.box56, boxes.box8);
+
       const p119 = getConnectionPoints(boxes.box22, boxes.box57);
       const p120 = getConnectionPoints(boxes.box57, boxes.box51);
 
@@ -2087,6 +2094,10 @@
 
       const p110 = getConnectionPoints(boxes.box29, boxes.box55);
       const p116 = getConnectionPoints(boxes.box55, boxes.box30);
+
+      // tele multiciclo
+      const p125 = getConnectionPoints(boxes.box56, boxes.box8);
+      const p126 = getConnectionPoints(boxes.box57, boxes.box51);
 
       lines.line1.setAttribute("d", `M ${p1.x1-50},${p1.y1} L ${p1.x2},${p1.y2}`);
       lines.line2.setAttribute("d", `M ${p2.x1},${p2.y1} L ${p2.x2},${p2.y2+10}`);
@@ -2210,14 +2221,14 @@
       // complementar
       lines.line91.setAttribute("d", `M ${p91.x1-15},${p91.y1+37.5} L ${p91.x2+35},${p91.y2-180}`);
       // tele sinal
-      lines.line98.setAttribute("d", `M ${p98.x1+35},${p98.y1+170} L ${p98.x2+35},${p98.y2-180}`);
+      lines.line98.setAttribute("d", `M ${p98.x1-15},${p98.y1+170} L ${p98.x2+35},${p98.y2-180}`);
 
       lines.line52.setAttribute("d", `M ${p52.x1-100},${p52.y1+22.5} L ${p52.x2-75},${p52.y2+40}`);
       lines.line53.setAttribute("d", `M ${p53.x1-72.5},${p53.y1+25} L ${p53.x2+75},${p53.y2-192.5}`);
       // complementar
       lines.line92.setAttribute("d", `M ${p92.x1-75},${p92.y1+40} L ${p92.x2+75},${p92.y2-180}`);
       // tele sinal
-      lines.line99.setAttribute("d", `M ${p99.x1+35},${p99.y1+160} L ${p99.x2+135},${p99.y2-180}`);
+      lines.line99.setAttribute("d", `M ${p99.x1-75},${p99.y1+160} L ${p99.x2+75},${p99.y2-180}`);
 
       lines.line54.setAttribute("d", `M ${p54.x1},${p54.y1+30} L ${p54.x2+20},${p54.y2+47.5}`);
       lines.line55.setAttribute("d", `M ${p55.x1+20},${p55.y1+47.5} L ${p55.x2+20},${p55.y2+20}`);
@@ -2226,14 +2237,14 @@
       // complementar
       lines.line93.setAttribute("d", `M ${p93.x1+7.5},${p93.y1+20} L ${p93.x2+15},${p93.y2-25}`);
       // tele sinal
-      lines.line100.setAttribute("d", `M ${p100.x1+35},${p100.y1+110} L ${p100.x2+15},${p100.y2-25}`);
+      lines.line100.setAttribute("d", `M ${p100.x1+6},${p100.y1+110} L ${p100.x2+15},${p100.y2-25}`);
 
       lines.line58.setAttribute("d", `M ${p58.x1},${p58.y1+10} L ${p58.x2-20},${p58.y2+37.5}`);
       lines.line59.setAttribute("d", `M ${p59.x1-20},${p59.y1+37.5} L ${p59.x2+90},${p59.y2-137.5}`);
       // complementar
       lines.line94.setAttribute("d", `M ${p94.x1-20},${p94.y1+37.5} L ${p94.x2+90},${p94.y2-125}`);
       // tele sinal
-      lines.line101.setAttribute("d", `M ${p101.x1+15},${p101.y1+120} L ${p101.x2+125},${p101.y2-125}`);
+      lines.line101.setAttribute("d", `M ${p101.x1-20},${p101.y1+120} L ${p101.x2+90},${p101.y2-125}`);
 
       lines.line60.setAttribute("d", `M ${p60.x1},${p60.y1-10} L ${p60.x2},${p60.y2+27.5}`);
       lines.line61.setAttribute("d", `M ${p61.x1},${p61.y1+27.5} L ${p61.x2},${p61.y2}`);
@@ -2242,7 +2253,7 @@
       // complementar
       lines.line95.setAttribute("d", `M ${p95.x1+2.5},${p95.y1} L ${p95.x2+12.5},${p95.y2+25.5}`);
       // tele sinal
-      lines.line102.setAttribute("d", `M ${p102.x1+32.5},${p102.y1-50} L ${p102.x2+12.5},${p102.y2+25.5}`);
+      lines.line102.setAttribute("d", `M ${p102.x1+2.5},${p102.y1-50} L ${p102.x2+12.5},${p102.y2+25.5}`);
 
       lines.line64.setAttribute("d", `M ${p64.x1},${p64.y1-25} L ${p64.x2+2.5},${p64.y2+22.5}`);
       lines.line65.setAttribute("d", `M ${p65.x1+2.5},${p65.y1+22.5} L ${p65.x2+42.5},${p65.y2-117.5}`);
@@ -2293,6 +2304,10 @@
 
       lines.line110.setAttribute("d", `M ${p110.x1},${p110.y1} L ${p110.x2+55},${p110.y2}`);
       lines.line116.setAttribute("d", `M ${p116.x1-55},${p116.y1} L ${p116.x2+30},${p116.y2}`);
+
+      // tele multiciclo
+      lines.line125.setAttribute("d", `M ${p125.x1+2.5},${p125.y1+147.5} L ${p125.x2+27.5},${p125.y2-27.5}`);
+      lines.line126.setAttribute("d", `M ${p126.x1+0},${p126.y1+77.5} L ${p126.x2+25},${p126.y2-27.5}`);
     }
 
     function moveBall(ball, line, onComplete = null) {
@@ -2316,7 +2331,7 @@
     }
 
     let clones = [];
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 35; i++) {
       clones[i] = data.cloneNode(true);
       document.body.appendChild(clones[i]);
       clones[i].innerText = "";
@@ -2709,8 +2724,6 @@
               setTimeout(() => { // Atualiza Reg comando LDAI
                 let reg_muda = document.getElementById("reg" + parseInt(log[clock - 1][1].substring(5, 8), 2));
                 let novo_valor = log[clock - 1][1].substring(8, 16);
-
-                
 
                 while (novo_valor.length < 16) {
                   novo_valor = "0" + novo_valor;
@@ -3274,6 +3287,22 @@
             
           }, 2000)
 
+          let teste_sinais = document.getElementById("tipo_sinais").value;
+
+          if (teste_sinais == "ativado" || teste_sinais == "teleporte") {
+            clones[29].style.display = "block";
+            clones[29].style.width = "15px";
+            clones[29].style.backgroundColor = "DodgerBlue";
+            clones[29].innerText = "1"
+
+            moveBall(clones[29], lines.line119)
+            setTimeout(() => {
+              moveBall(clones[29], lines.line120)
+            }, 1000)
+          }
+
+
+
         }
 
       } else if (currentStep === 2) {
@@ -3282,6 +3311,10 @@
           // movido          
 
         } else if (tipo_sim == "multiciclo") {
+
+          // controle remove
+          clones[29].style.display = "none";
+
           clones[4].style.display = "flex";
 
           moveBall(clones[4], lines.line106);
@@ -3384,134 +3417,6 @@
             }
           }, 2000)
 
-          let teste_sinais = document.getElementById("tipo_sinais").value;
-
-          if (teste_sinais == "ativado" || teste_sinais == "teleporte") {
-            clones[21].style.display = "block";
-            clones[22].style.display = "block";
-            clones[23].style.display = "block";
-            clones[24].style.display = "block";
-            clones[25].style.display = "block";
-            clones[26].style.display = "block";
-            clones[27].style.display = "block";
-
-            clones[21].style.backgroundColor = "DodgerBlue";
-            clones[22].style.backgroundColor = "DodgerBlue";
-            clones[23].style.backgroundColor = "DodgerBlue";
-            clones[24].style.backgroundColor = "DodgerBlue";
-            clones[25].style.backgroundColor = "DodgerBlue";
-            clones[26].style.backgroundColor = "DodgerBlue";
-            clones[27].style.backgroundColor = "DodgerBlue";
-
-            clones[21].innerText = log[clock][5][0];
-            clones[21].style.width = "20px";
-
-            clones[22].innerHTML = log[clock][5][1];
-            clones[22].style.width = "20px";
-
-            clones[23].innerText = log[clock][5][2];
-            clones[23].style.width = "20px";
-
-            clones[24].innerText = log[clock][5][3];
-            clones[24].style.width = "20px";
-
-            clones[25].innerText = log[clock][5][4];
-            clones[25].style.width = "20px";
-
-            let aux = log[clock][5][5].toString();
-            while (aux.length < 2) {
-              aux = "0" + aux;
-            };
-            clones[26].innerText = aux;
-            clones[26].style.width = "30px";
-
-            aux = log[clock][5][5].toString();
-            while (aux.length < 3) {
-              aux = "0" + aux;
-            }
-            clones[27].innerText = aux;
-            clones[27].style.width = "40px";
-
-            moveBall(clones[21], lines.line48);
-            setTimeout(() => {
-              moveBall(clones[21], lines.line49);
-              setTimeout(() => {
-                if (log[clock][5][0] == 0) {
-                  document.getElementById("line68").style.strokeWidth = 2;
-                  document.getElementById("line69").style.strokeWidth = 0;
-                } else if (log[clock][5][0] == 1) {
-                  document.getElementById("line69").style.strokeWidth = 2;
-                  document.getElementById("line68").style.strokeWidth = 0;
-                } 
-              }, 1000);
-            }, 1000);
-
-            moveBall(clones[22], lines.line50);
-            setTimeout(() => {
-              moveBall(clones[22], lines.line51);
-            }, 1000);
-
-            moveBall(clones[23], lines.line52);
-            setTimeout(() => {
-              moveBall(clones[23], lines.line53);
-            }, 1000);
-
-            moveBall(clones[24], lines.line54);
-            setTimeout(() => {
-              moveBall(clones[24], lines.line55);
-              setTimeout(() => {
-                moveBall(clones[24], lines.line56);
-                setTimeout(() => {
-                  moveBall(clones[24], lines.line57);
-                  setTimeout(() => {
-                    if (log[clock][5][3] == 0) {
-                      document.getElementById("line71").style.strokeWidth = 0;
-                      document.getElementById("line70").style.strokeWidth = 2;
-                    } else if (log[clock][5][3] == 1) {
-                      document.getElementById("line70").style.strokeWidth = 0;
-                      document.getElementById("line71").style.strokeWidth = 2;
-                    } 
-                  }, 1000);
-                }, 1000);
-              }, 1000);
-            }, 1000);
-
-            moveBall(clones[25], lines.line58);
-            setTimeout(() => {
-              moveBall(clones[25], lines.line59);
-            }, 1000);
-
-            moveBall(clones[26], lines.line60);
-            setTimeout(() => {
-              moveBall(clones[26], lines.line61);
-              setTimeout(() => {
-                moveBall(clones[26], lines.line62);
-                setTimeout(() => {
-                  moveBall(clones[26], lines.line63);
-                  setTimeout(() => {
-                    if (log[clock][5][5] == "00") {
-                      document.getElementById("line72").style.strokeWidth = 2;
-                      document.getElementById("line73").style.strokeWidth = 0;
-                      document.getElementById("line74").style.strokeWidth = 0;
-                    } else if (log[clock][5][5] == "01") {
-                      document.getElementById("line73").style.strokeWidth = 2;
-                      document.getElementById("line72").style.strokeWidth = 0;
-                      document.getElementById("line74").style.strokeWidth = 0;
-                    } else if (log[clock][5][5] == "10") {
-                      document.getElementById("line74").style.strokeWidth = 2;
-                      document.getElementById("line72").style.strokeWidth = 0;
-                      document.getElementById("line73").style.strokeWidth = 0;
-                    }
-                  }, 1000);
-                }, 1000);
-              }, 1000);
-            }, 1000);
-
-            moveBall(clones[27], lines.line64);
-            setTimeout(() => {
-              moveBall(clones[27], lines.line65);
-            }, 1000);
-          }
         }
           
 
@@ -3828,13 +3733,125 @@
 
         }
 
+        let teste_sinais = document.getElementById("tipo_sinais").value;
+
+        if (teste_sinais == "ativado" || teste_sinais == "teleporte") {
+          clones[30].style.display = "block"
+          clones[30].style.backgroundColor = "DodgerBlue"
+          clones[30].style.width = "15px"
+          clones[30].innerText = "1"
+
+          moveBall(clones[30], lines.line117)
+          setTimeout(() => {
+            moveBall(clones[30], lines.line118)
+          }, 1000)
+
+          if (log[clock][1].substring(0,5) == "00001") {
+            clones[22].style.display = "block";
+
+            clones[22].style.backgroundColor = "DodgerBlue";
+  
+            clones[22].innerHTML = "1";
+            clones[22].style.width = "20px";
+
+            moveBall(clones[22], lines.line50);
+            setTimeout(() => {
+              moveBall(clones[22], lines.line51);
+            }, 1000);
+          }
+
+          if (log[clock][1].substring(0,5) == "00010") {
+            clones[24].style.display = "block";
+            clones[26].style.display = "block";
+
+            clones[24].style.backgroundColor = "DodgerBlue";
+            clones[26].style.backgroundColor = "DodgerBlue";
+
+            clones[24].innerText = log[clock][5][3];
+            clones[24].style.width = "20px";
+
+            let aux = log[clock][5][5].toString();
+            while (aux.length < 2) {
+              aux = "0" + aux;
+            };
+            clones[26].innerText = aux;
+            clones[26].style.width = "30px";
+
+
+            moveBall(clones[24], lines.line54);
+            setTimeout(() => {
+              moveBall(clones[24], lines.line55);
+              setTimeout(() => {
+                moveBall(clones[24], lines.line56);
+                setTimeout(() => {
+                  moveBall(clones[24], lines.line57);
+                  setTimeout(() => {
+                    if (log[clock][5][3] == 0) {
+                      document.getElementById("line71").style.strokeWidth = 0;
+                      document.getElementById("line70").style.strokeWidth = 2;
+                    } else if (log[clock][5][3] == 1) {
+                      document.getElementById("line70").style.strokeWidth = 0;
+                      document.getElementById("line71").style.strokeWidth = 2;
+                    } 
+                  }, 1000);
+                }, 1000);
+              }, 1000);
+            }, 1000);
+
+            moveBall(clones[26], lines.line60);
+            setTimeout(() => {
+              moveBall(clones[26], lines.line61);
+              setTimeout(() => {
+                moveBall(clones[26], lines.line62);
+                setTimeout(() => {
+                  moveBall(clones[26], lines.line63);
+                  setTimeout(() => {
+                    if (log[clock][5][5] == "00") {
+                      document.getElementById("line72").style.strokeWidth = 2;
+                      document.getElementById("line73").style.strokeWidth = 0;
+                      document.getElementById("line74").style.strokeWidth = 0;
+                    } else if (log[clock][5][5] == "01") {
+                      document.getElementById("line73").style.strokeWidth = 2;
+                      document.getElementById("line72").style.strokeWidth = 0;
+                      document.getElementById("line74").style.strokeWidth = 0;
+                    } else if (log[clock][5][5] == "10") {
+                      document.getElementById("line74").style.strokeWidth = 2;
+                      document.getElementById("line72").style.strokeWidth = 0;
+                      document.getElementById("line73").style.strokeWidth = 0;
+                    }
+                  }, 1000);
+                }, 1000);
+              }, 1000);
+            }, 1000);
+
+            clones[25].style.display = "block";
+
+            clones[25].style.backgroundColor = "DodgerBlue";
+
+            clones[25].innerText = "1";
+            clones[25].style.width = "20px";
+
+            moveBall(clones[25], lines.line58);
+            setTimeout(() => {
+              moveBall(clones[25], lines.line59);
+            }, 1000);
+          }
+        }
+
       } else if (currentStep === 4) {
 
         if (tipo_sim == "monociclo") {
           
           // movido
 
-        } else if (tipo_sim == "multiciclo") { // multiclo clock 4
+        } else if (tipo_sim == "multiciclo") { // multiclo clock 
+
+          // controle some
+          clones[30].style.display = "none";
+          clones[22].style.display = "none";
+          clones[24].style.display = "none";
+          clones[26].style.display = "none";
+          clones[25].style.display = "none";
 
           if (log[clock][1].substring(0, 5) == "00001") { // LDA
 
@@ -3984,7 +4001,7 @@
               }, 1000);
             }, 1000);
 
-          } else if (log[clock][1].substring(0, 5) == "00100") { // ADD
+          } else if (log[clock][1].substring(0, 5) == "00100" || log[clock][1].substring(0, 5) == "00101" || log[clock][1].substring(0, 5) == "00110" || log[clock][1].substring(0, 5) == "00111" || log[clock][1].substring(0, 5) == "01000") { // ADD, SUB, OR, AND, NOT
             clones[15].style.display = "block";
             clones[17].style.display = "block";
             clones[15].style.width = "60px";
@@ -4103,12 +4120,133 @@
 
         }
 
+        let teste_sinais = document.getElementById("tipo_sinais").value;
+
+        if (teste_sinais == "ativado" || teste_sinais == "teleporte") {
+
+          if (log[clock][1].substring(0, 5) == "00100" || log[clock][1].substring(0, 5) == "00101" || log[clock][1].substring(0, 5) == "00110" || log[clock][1].substring(0, 5) == "00111" || log[clock][1].substring(0, 5) == "01000") {
+            clones[27].style.display = "block";
+
+            clones[27].style.backgroundColor = "DodgerBlue";
+
+            aux = log[clock][5][5].toString();
+            while (aux.length < 3) {
+              aux = "0" + aux;
+            }
+            clones[27].innerText = aux;
+            clones[27].style.width = "40px";
+
+            moveBall(clones[27], lines.line64);
+            setTimeout(() => {
+              moveBall(clones[27], lines.line65);
+            }, 1000);
+          }
+
+          if (log[clock][1].substring(0, 5) == "00001") {
+            clones[24].style.display = "block";
+            clones[26].style.display = "block";
+
+            clones[24].style.backgroundColor = "DodgerBlue";
+            clones[26].style.backgroundColor = "DodgerBlue";
+
+            clones[24].innerText = log[clock][5][3];
+            clones[24].style.width = "20px";
+
+            let aux = log[clock][5][5].toString();
+            while (aux.length < 2) {
+              aux = "0" + aux;
+            };
+            clones[26].innerText = aux;
+            clones[26].style.width = "30px";
+
+
+            moveBall(clones[24], lines.line54);
+            setTimeout(() => {
+              moveBall(clones[24], lines.line55);
+              setTimeout(() => {
+                moveBall(clones[24], lines.line56);
+                setTimeout(() => {
+                  moveBall(clones[24], lines.line57);
+                  setTimeout(() => {
+                    if (log[clock][5][3] == 0) {
+                      document.getElementById("line71").style.strokeWidth = 0;
+                      document.getElementById("line70").style.strokeWidth = 2;
+                    } else if (log[clock][5][3] == 1) {
+                      document.getElementById("line70").style.strokeWidth = 0;
+                      document.getElementById("line71").style.strokeWidth = 2;
+                    } 
+                  }, 1000);
+                }, 1000);
+              }, 1000);
+            }, 1000);
+
+            moveBall(clones[26], lines.line60);
+            setTimeout(() => {
+              moveBall(clones[26], lines.line61);
+              setTimeout(() => {
+                moveBall(clones[26], lines.line62);
+                setTimeout(() => {
+                  moveBall(clones[26], lines.line63);
+                  setTimeout(() => {
+                    if (log[clock][5][5] == "00") {
+                      document.getElementById("line72").style.strokeWidth = 2;
+                      document.getElementById("line73").style.strokeWidth = 0;
+                      document.getElementById("line74").style.strokeWidth = 0;
+                    } else if (log[clock][5][5] == "01") {
+                      document.getElementById("line73").style.strokeWidth = 2;
+                      document.getElementById("line72").style.strokeWidth = 0;
+                      document.getElementById("line74").style.strokeWidth = 0;
+                    } else if (log[clock][5][5] == "10") {
+                      document.getElementById("line74").style.strokeWidth = 2;
+                      document.getElementById("line72").style.strokeWidth = 0;
+                      document.getElementById("line73").style.strokeWidth = 0;
+                    }
+                  }, 1000);
+                }, 1000);
+              }, 1000);
+            }, 1000);
+
+            clones[25].style.display = "block";
+
+            clones[25].style.backgroundColor = "DodgerBlue";
+
+            clones[25].innerText = "1";
+            clones[25].style.width = "20px";
+
+            moveBall(clones[25], lines.line58);
+            setTimeout(() => {
+              moveBall(clones[25], lines.line59);
+            }, 1000);
+
+          }
+
+          if (log[clock][1].substring(0, 5) == "00011") {
+            clones[23].style.display = "block";
+
+            clones[23].style.backgroundColor = "DodgerBlue";
+
+            clones[23].innerText = "1";
+            clones[23].style.width = "20px";
+
+            moveBall(clones[23], lines.line52);
+            setTimeout(() => {
+              moveBall(clones[23], lines.line53);
+            }, 1000);
+          }
+        }
+
       } else if (currentStep === 5) {
         if (tipo_sim == "monociclo") {
           
           // movido
 
         } else if (tipo_sim == "multiciclo") { // clock 5
+
+          // remove controle
+          clones[27].style.display = "none";
+          clones[24].style.display = "none";
+          clones[26].style.display = "none";
+          clones[23].style.display = "none";
 
           setTimeout(() => {
             currentStep += 10 // clock a mais evitar
@@ -4231,14 +4369,85 @@
           }, 3000)
           
         }
-
-      } else if (currentStep === 6) {
         
-        // movido
+        let teste_sinais = document.getElementById("tipo_sinais").value;
 
-      } else if (currentStep === 7) {
+        if (teste_sinais == "ativado" || teste_sinais == "teleporte") {
+          clones[24].style.display = "block";
+          clones[26].style.display = "block";
 
-        // movido
+          clones[24].style.backgroundColor = "DodgerBlue";
+          clones[26].style.backgroundColor = "DodgerBlue";
+
+          clones[24].innerText = log[clock][5][3];
+          clones[24].style.width = "20px";
+
+          let aux = log[clock][5][5].toString();
+          while (aux.length < 2) {
+            aux = "0" + aux;
+          };
+          clones[26].innerText = aux;
+          clones[26].style.width = "30px";
+
+
+          moveBall(clones[24], lines.line54);
+          setTimeout(() => {
+            moveBall(clones[24], lines.line55);
+            setTimeout(() => {
+              moveBall(clones[24], lines.line56);
+              setTimeout(() => {
+                moveBall(clones[24], lines.line57);
+                setTimeout(() => {
+                  if (log[clock][5][3] == 0) {
+                    document.getElementById("line71").style.strokeWidth = 0;
+                    document.getElementById("line70").style.strokeWidth = 2;
+                  } else if (log[clock][5][3] == 1) {
+                    document.getElementById("line70").style.strokeWidth = 0;
+                    document.getElementById("line71").style.strokeWidth = 2;
+                  } 
+                }, 1000);
+              }, 1000);
+            }, 1000);
+          }, 1000);
+
+          moveBall(clones[26], lines.line60);
+          setTimeout(() => {
+            moveBall(clones[26], lines.line61);
+            setTimeout(() => {
+              moveBall(clones[26], lines.line62);
+              setTimeout(() => {
+                moveBall(clones[26], lines.line63);
+                setTimeout(() => {
+                  if (log[clock][5][5] == "00") {
+                    document.getElementById("line72").style.strokeWidth = 2;
+                    document.getElementById("line73").style.strokeWidth = 0;
+                    document.getElementById("line74").style.strokeWidth = 0;
+                  } else if (log[clock][5][5] == "01") {
+                    document.getElementById("line73").style.strokeWidth = 2;
+                    document.getElementById("line72").style.strokeWidth = 0;
+                    document.getElementById("line74").style.strokeWidth = 0;
+                  } else if (log[clock][5][5] == "10") {
+                    document.getElementById("line74").style.strokeWidth = 2;
+                    document.getElementById("line72").style.strokeWidth = 0;
+                    document.getElementById("line73").style.strokeWidth = 0;
+                  }
+                }, 1000);
+              }, 1000);
+            }, 1000);
+          }, 1000);
+        }
+
+        clones[25].style.display = "block";
+
+        clones[25].style.backgroundColor = "DodgerBlue";
+
+        clones[25].innerText = "1";
+        clones[25].style.width = "20px";
+
+        moveBall(clones[25], lines.line58);
+        setTimeout(() => {
+          moveBall(clones[25], lines.line59);
+        }, 1000);
 
       }
 
@@ -4637,6 +4846,9 @@
         document.getElementById("line119").style.strokeWidth = 0;
         document.getElementById("line120").style.strokeWidth = 0;
 
+        document.getElementById("line125").style.strokeWidth = 0;
+        document.getElementById("line126").style.strokeWidth = 0;
+
       } else if (sinais == "ativado") {
         for (let i = 48; i <= 67; i++) {
           document.getElementById("line" + i).style.strokeWidth = 2;
@@ -4665,11 +4877,13 @@
         document.getElementById("line103").style.strokeWidth = 0;
         document.getElementById("line104").style.strokeWidth = 0;
 
-        // controle multiciclo
-        document.getElementById("line117").style.strokeWidth = 2;
-        document.getElementById("line118").style.strokeWidth = 2;
-        document.getElementById("line119").style.strokeWidth = 2;
-        document.getElementById("line120").style.strokeWidth = 2;
+        if (modo == "multiciclo") {
+          // controle multiciclo
+          document.getElementById("line117").style.strokeWidth = 2;
+          document.getElementById("line118").style.strokeWidth = 2;
+          document.getElementById("line119").style.strokeWidth = 2;
+          document.getElementById("line120").style.strokeWidth = 2;
+        }
 
       } else if (sinais == "teleporte") {
         for (let i = 48; i <= 67; i++) {
@@ -4691,6 +4905,11 @@
         document.getElementById("line102").style.strokeWidth = 2;
         document.getElementById("line103").style.strokeWidth = 2;
         document.getElementById("line104").style.strokeWidth = 2;
+
+        if (modo == "multiciclo") {
+          document.getElementById("line125").style.strokeWidth = 2;
+          document.getElementById("line126").style.strokeWidth = 2;
+        }
       }
 
       if (modo == "monociclo") {
@@ -4712,7 +4931,7 @@
           document.getElementById("m_dad" + i).value = parseInt(document.getElementById("m_dad" + i).value, 10).toString(16);
         }
         for (let i = 0; i < 256; i++) {
-          document.getElementById("m_ins" + i).value = parseInt(document.getElementById("m_dad" + i).value, 10).toString(16);
+          document.getElementById("m_ins" + i).value = parseInt(document.getElementById("m_ins" + i).value, 10).toString(16);
         }
       }
       if (tipo_dado.value == "dec") {
@@ -4726,7 +4945,7 @@
           document.getElementById("m_dad" + i).value = decimal(document.getElementById("m_dad" + i).value);
         }
         for (let i = 0; i < 256; i++) {
-          document.getElementById("m_ins" + i).value = decimal(document.getElementById("m_dad" + i).value);
+          document.getElementById("m_ins" + i).value = decimal(document.getElementById("m_ins" + i).value);
         }
       }
     }
